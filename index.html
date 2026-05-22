@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Horarios — Boutique de la Plage</title>
+<title>Horarios — Hendaye</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
   :root {
@@ -15,7 +15,14 @@
     --radius:8px; --radius-lg:14px;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:2rem 1.5rem;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:1.5rem 1.5rem;}
+
+  /* STORE TABS */
+  .store-tabs{display:flex;gap:0;margin-bottom:2rem;border-bottom:2px solid var(--border);}
+  .store-tab{padding:10px 22px;border:none;background:transparent;font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;}
+  .store-tab:hover{color:var(--text);}
+  .store-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+  .store-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;}
 
   .hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.75rem;gap:1rem;flex-wrap:wrap;}
   .hdr h1{font-size:22px;font-weight:600;letter-spacing:-.3px;}
@@ -30,11 +37,16 @@
   .btn-danger:hover{background:#fdd;}
   .btn-sm{padding:4px 10px;font-size:12px;}
 
-  .tabs{display:flex;gap:4px;margin-bottom:1.5rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:4px;width:fit-content;flex-wrap:wrap;}
-  .tab{padding:6px 16px;border-radius:6px;border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;color:var(--muted);transition:all .15s;}
-  .tab.active{background:var(--text);color:#fff;}
+  .view-tabs{display:flex;gap:4px;margin-bottom:1.5rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:4px;width:fit-content;flex-wrap:wrap;}
+  .vtab{padding:6px 16px;border-radius:6px;border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;color:var(--muted);transition:all .15s;}
+  .vtab.active{background:var(--text);color:#fff;}
 
-  /* HORAS ACUMULADAS */
+  /* EMPTY STATE */
+  .empty-state{text-align:center;padding:4rem 2rem;color:var(--muted);}
+  .empty-state h2{font-size:18px;font-weight:500;margin-bottom:8px;color:var(--text);}
+  .empty-state p{font-size:14px;line-height:1.6;}
+
+  /* HORAS */
   .acc-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem 1.5rem;margin-bottom:1.75rem;}
   .acc-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;}
   .acc-header h2{font-size:14px;font-weight:600;}
@@ -52,7 +64,6 @@
   .acc-card-week{font-size:11px;color:var(--muted);margin-top:6px;}
   .adj-btn-row{display:flex;gap:4px;margin-top:8px;}
 
-  /* WEEK NAV */
   .week-nav{display:flex;align-items:center;gap:12px;margin-bottom:1.25rem;}
   .week-label{font-size:15px;font-weight:500;flex:1;text-align:center;}
   .week-sub{font-size:12px;color:var(--muted);display:block;text-align:center;margin-top:1px;}
@@ -61,7 +72,6 @@
   .leg{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);}
   .leg-dot{width:11px;height:11px;border-radius:3px;flex-shrink:0;}
 
-  /* TABLE */
   .table-wrap{overflow-x:auto;border-radius:var(--radius-lg);border:1px solid var(--border);background:var(--surface);margin-bottom:1.5rem;box-shadow:0 1px 4px rgba(0,0,0,.04);}
   table{width:100%;border-collapse:collapse;table-layout:fixed;min-width:640px;}
   thead th{padding:10px 6px;font-size:11px;font-weight:600;color:var(--muted);text-align:center;border-bottom:1px solid var(--border);letter-spacing:.04em;text-transform:uppercase;}
@@ -87,7 +97,6 @@
   .stat-value{font-size:24px;font-weight:600;}
   .stat-sub{font-size:11px;color:var(--muted);margin-top:2px;}
 
-  /* MONTHLY */
   .month-nav{display:flex;align-items:center;gap:12px;margin-bottom:1.25rem;}
   .month-label{font-size:15px;font-weight:500;flex:1;text-align:center;}
   .month-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:1.5rem;}
@@ -103,11 +112,9 @@
   .mp-T{background:var(--T-bg);color:var(--T-text);}
   .mp-OFF{background:var(--OFF-bg);color:var(--OFF-text);}
 
-  /* VISTA POR EMPLEADO */
   .emp-select-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.25rem;align-items:center;}
   .emp-select-bar label{font-size:13px;color:var(--muted);font-weight:500;}
   .emp-select-bar select{border:1px solid var(--border2);border-radius:var(--radius);padding:7px 12px;font-family:inherit;font-size:13px;background:var(--surface);color:var(--text);cursor:pointer;}
-  .emp-select-bar select:focus{outline:none;border-color:var(--accent);}
   .emp-profile{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem 1.5rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;}
   .emp-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;flex-shrink:0;}
   .emp-profile-info h3{font-size:16px;font-weight:600;}
@@ -121,19 +128,15 @@
   .emp-day-num.is-today{color:var(--accent);}
   .emp-day-shift{font-size:10px;font-weight:600;}
   .emp-day.d-M{background:var(--M-bg);border-color:var(--M-border);}
-  .emp-day.d-M .emp-day-num{color:var(--M-text);}
-  .emp-day.d-M .emp-day-shift{color:var(--M-text);}
+  .emp-day.d-M .emp-day-num,.emp-day.d-M .emp-day-shift{color:var(--M-text);}
   .emp-day.d-T{background:var(--T-bg);border-color:var(--T-border);}
-  .emp-day.d-T .emp-day-num{color:var(--T-text);}
-  .emp-day.d-T .emp-day-shift{color:var(--T-text);}
+  .emp-day.d-T .emp-day-num,.emp-day.d-T .emp-day-shift{color:var(--T-text);}
   .emp-day.d-OFF{background:var(--OFF-bg);border-color:var(--OFF-border);}
-  .emp-day.d-OFF .emp-day-num{color:var(--OFF-text);}
-  .emp-day.d-OFF .emp-day-shift{color:var(--OFF-text);}
+  .emp-day.d-OFF .emp-day-num,.emp-day.d-OFF .emp-day-shift{color:var(--OFF-text);}
   .emp-day.d-today{box-shadow:0 0 0 2px var(--accent);}
   .emp-month-nav{display:flex;align-items:center;gap:12px;margin-bottom:1rem;}
   .emp-month-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:1.5rem;}
 
-  /* SETTINGS */
   .settings-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem 1.5rem;margin-bottom:1.5rem;display:none;}
   .settings-panel.open{display:block;}
   .settings-panel h3{font-size:14px;font-weight:600;margin-bottom:1rem;}
@@ -143,7 +146,6 @@
   .setting-row input{border:1px solid var(--border2);border-radius:var(--radius);padding:7px 10px;font-family:inherit;font-size:13px;background:var(--bg);color:var(--text);}
   .setting-row input:focus{outline:none;border-color:var(--accent);}
 
-  /* MODAL */
   .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:center;justify-content:center;}
   .modal-bg.open{display:flex;}
   .modal{background:var(--surface);border-radius:var(--radius-lg);padding:1.5rem;width:380px;max-width:95vw;box-shadow:0 8px 32px rgba(0,0,0,.15);max-height:90vh;overflow-y:auto;}
@@ -164,104 +166,80 @@
   .adj-badge.neg{background:#fee;color:#a00;}
   .adj-date{color:var(--muted);font-size:11px;}
   .adj-note{color:var(--muted);font-size:11px;margin-top:1px;}
-
   .info-bar{font-size:12px;color:var(--muted);background:var(--OFF-bg);border:1px solid var(--OFF-border);border-radius:var(--radius);padding:8px 14px;margin-bottom:1rem;display:none;align-items:center;gap:6px;}
 
-  /* PRINT */
   @media print{
-    body{background:#fff;padding:0.5rem;font-size:11px;}
+    body{background:#fff;padding:0.5rem;}
     .no-print{display:none!important;}
-    .acc-panel{break-inside:avoid;}
-    .table-wrap{box-shadow:none;border:1px solid #ccc;break-inside:avoid;}
-    .stats{break-inside:avoid;}
-    .emp-month-grid{break-inside:avoid;}
-    .print-header{display:block!important;}
+    .store-tabs{display:none;}
+    .table-wrap{box-shadow:none;border:1px solid #ccc;}
   }
-  .print-header{display:none;font-size:12px;color:#666;margin-bottom:0.5rem;}
 </style>
 </head>
 <body>
 
-<div class="hdr">
-  <div class="header-left">
-    <h1>Boutique de la Plage</h1>
-    <p>Horarios temporada · Mañana 10:00–16:30 · Tarde 16:30–23:00 · Desde 1 julio 2026</p>
+<!-- PESTAÑAS DE TIENDA -->
+<div class="store-tabs no-print">
+  <button class="store-tab active" onclick="switchStore('comptoir',this)">
+    <span class="store-dot" style="background:#2a5fa5"></span>Comptoir des Océans
+  </button>
+  <button class="store-tab" onclick="switchStore('boutique',this)">
+    <span class="store-dot" style="background:#1e5c0a"></span>Boutique de la Plage
+  </button>
+  <button class="store-tab" onclick="switchStore('hondartza',this)">
+    <span class="store-dot" style="background:#7a2e0e"></span>Hondartza
+  </button>
+</div>
+
+<!-- CONTENIDO DE CADA TIENDA -->
+<div id="store-comptoir">
+  <div class="hdr">
+    <div>
+      <h1>Comptoir des Océans</h1>
+      <p id="hdr-subtitle-comptoir">Horarios temporada · Mañana 10:00–16:30 · Tarde 16:30–23:00 · Desde 1 julio 2026</p>
+    </div>
+    <div class="hdr-btns no-print">
+      <button class="btn" onclick="toggleSettings('comptoir')">⚙ Configurar</button>
+      <button class="btn btn-primary" onclick="exportPDF()">⬇ Exportar PDF</button>
+    </div>
   </div>
-  <div class="hdr-btns no-print">
-    <button class="btn" onclick="toggleSettings()">⚙ Configurar</button>
-    <button class="btn btn-primary" onclick="exportPDF()">⬇ Exportar PDF</button>
+  <div class="settings-panel" id="settingsPanel-comptoir">
+    <h3>Nombres del equipo — Comptoir</h3>
+    <div class="settings-grid" id="settingsGrid-comptoir"></div>
+    <div style="margin-top:1rem;display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="saveSettings('comptoir')">Guardar nombres</button>
+      <button class="btn btn-danger btn-sm" onclick="resetAdjs('comptoir')">Reiniciar ajustes</button>
+    </div>
+  </div>
+  <div class="acc-panel"><div class="acc-header"><h2 id="accTitle-comptoir">Horas acumuladas</h2><span id="accSubtitle-comptoir"></span></div><div class="acc-grid" id="hoursGrid-comptoir"></div></div>
+  <div class="view-tabs no-print">
+    <button class="vtab active" onclick="switchView('comptoir','weekly',this)">Semana</button>
+    <button class="vtab" onclick="switchView('comptoir','monthly',this)">Mes</button>
+    <button class="vtab" onclick="switchView('comptoir','emp',this)">Por empleado</button>
+  </div>
+  <div id="weeklyView-comptoir">
+    <div class="week-nav"><button class="btn no-print" onclick="changeWeek('comptoir',-1)">← Anterior</button><div><div class="week-label" id="weekLabel-comptoir"></div><span class="week-sub" id="weekNum-comptoir"></span></div><button class="btn no-print" onclick="changeWeek('comptoir',1)">Siguiente →</button></div>
+    <div class="info-bar" id="infoBar-comptoir"><span id="infoText-comptoir"></span></div>
+    <div class="legend"><div class="leg"><div class="leg-dot" style="background:var(--M-bg);border:1px solid var(--M-border)"></div>Mañana (10–16:30)</div><div class="leg"><div class="leg-dot" style="background:var(--T-bg);border:1px solid var(--T-border)"></div>Tarde (16:30–23)</div><div class="leg"><div class="leg-dot" style="background:var(--OFF-bg);border:1px solid var(--OFF-border)"></div>Festivo</div></div>
+    <div class="table-wrap"><table><thead><tr id="headerRow-comptoir"></tr></thead><tbody id="scheduleBody-comptoir"></tbody></table></div>
+    <div class="stats" id="statsRow-comptoir"></div>
+  </div>
+  <div id="monthlyView-comptoir" style="display:none"><div class="month-nav no-print"><button class="btn" onclick="changeMonth('comptoir',-1)">← Anterior</button><div class="month-label" id="monthLabel-comptoir"></div><button class="btn" onclick="changeMonth('comptoir',1)">Siguiente →</button></div><div class="month-grid" id="monthGrid-comptoir"></div></div>
+  <div id="empView-comptoir" style="display:none"><div class="emp-select-bar no-print"><label>Empleado:</label><select id="empSelect-comptoir" onchange="renderEmpView('comptoir')"></select></div><div id="empProfile-comptoir" class="emp-profile"></div><div class="emp-month-nav"><button class="btn no-print" onclick="changeEmpMonth('comptoir',-1)">← Anterior</button><div class="month-label" id="empMonthLabel-comptoir"></div><button class="btn no-print" onclick="changeEmpMonth('comptoir',1)">Siguiente →</button></div><div class="emp-month-stats" id="empMonthStats-comptoir"></div><div class="emp-month-grid" id="empMonthGrid-comptoir"></div></div>
+</div>
+
+<div id="store-boutique" style="display:none">
+  <div class="empty-state">
+    <h2>Boutique de la Plage</h2>
+    <p>Pendiente de configurar.<br>Cuando estés listo, cuéntame los empleados y su estructura de turnos.</p>
   </div>
 </div>
 
-<!-- SETTINGS -->
-<div class="settings-panel" id="settingsPanel">
-  <h3>Nombres del equipo</h3>
-  <div class="settings-grid" id="settingsGrid"></div>
-  <div style="margin-top:1rem;display:flex;gap:8px;flex-wrap:wrap;">
-    <button class="btn btn-primary" onclick="saveSettings()">Guardar nombres</button>
-    <button class="btn btn-danger btn-sm" onclick="resetAdjs()">Reiniciar ajustes de horas</button>
+<div id="store-hondartza" style="display:none">
+  <div class="empty-state">
+    <h2>Hondartza</h2>
+    <p>Pendiente de configurar.<br>Horario de 10:00 a 19:00 — cuéntame la estructura de turnos cuando estés listo.</p>
   </div>
-</div>
-
-<!-- HORAS ACUMULADAS -->
-<div class="acc-panel">
-  <div class="acc-header">
-    <h2 id="accTitle">Horas acumuladas</h2>
-    <span id="accSubtitle"></span>
-  </div>
-  <div class="acc-grid" id="hoursGrid"></div>
-</div>
-
-<!-- TABS -->
-<div class="tabs no-print">
-  <button class="tab active" id="tab-weekly"  onclick="switchTab('weekly',this)">Semana</button>
-  <button class="tab"        id="tab-monthly" onclick="switchTab('monthly',this)">Mes</button>
-  <button class="tab"        id="tab-emp"     onclick="switchTab('emp',this)">Por empleado</button>
-</div>
-
-<!-- WEEKLY -->
-<div id="weeklyView">
-  <div class="week-nav">
-    <button class="btn no-print" onclick="changeWeek(-1)">← Anterior</button>
-    <div><div class="week-label" id="weekLabel"></div><span class="week-sub" id="weekNum"></span></div>
-    <button class="btn no-print" onclick="changeWeek(1)">Siguiente →</button>
-  </div>
-  <div class="info-bar" id="infoBar"><span id="infoText"></span></div>
-  <div class="legend">
-    <div class="leg"><div class="leg-dot" style="background:var(--M-bg);border:1px solid var(--M-border)"></div>Mañana (10–16:30)</div>
-    <div class="leg"><div class="leg-dot" style="background:var(--T-bg);border:1px solid var(--T-border)"></div>Tarde (16:30–23)</div>
-    <div class="leg"><div class="leg-dot" style="background:var(--OFF-bg);border:1px solid var(--OFF-border)"></div>Festivo</div>
-  </div>
-  <div class="table-wrap">
-    <table><thead><tr id="headerRow"></tr></thead><tbody id="scheduleBody"></tbody></table>
-  </div>
-  <div class="stats" id="statsRow"></div>
-</div>
-
-<!-- MONTHLY -->
-<div id="monthlyView" style="display:none">
-  <div class="month-nav no-print">
-    <button class="btn" onclick="changeMonth(-1)">← Anterior</button>
-    <div class="month-label" id="monthLabel"></div>
-    <button class="btn" onclick="changeMonth(1)">Siguiente →</button>
-  </div>
-  <div class="month-grid" id="monthGrid"></div>
-</div>
-
-<!-- POR EMPLEADO -->
-<div id="empView" style="display:none">
-  <div class="emp-select-bar no-print">
-    <label>Empleado:</label>
-    <select id="empSelect" onchange="renderEmpView()"></select>
-  </div>
-  <div id="empProfile" class="emp-profile"></div>
-  <div class="emp-month-nav">
-    <button class="btn no-print" onclick="changeEmpMonth(-1)">← Anterior</button>
-    <div class="month-label" id="empMonthLabel"></div>
-    <button class="btn no-print" onclick="changeEmpMonth(1)">Siguiente →</button>
-  </div>
-  <div class="emp-month-stats" id="empMonthStats"></div>
-  <div class="emp-month-grid" id="empMonthGrid"></div>
 </div>
 
 <!-- MODAL AJUSTE -->
@@ -269,35 +247,16 @@
   <div class="modal">
     <h3 id="modalTitle">Ajustar horas</h3>
     <p id="modalSub"></p>
-    <div class="modal-row">
-      <label>Tipo de ajuste</label>
-      <select id="adjType">
-        <option value="extra">+ Horas extra</option>
-        <option value="menos">− Horas a descontar</option>
-      </select>
-    </div>
-    <div class="modal-row">
-      <label>Horas (ej: 2 o 1.5)</label>
-      <input type="number" id="adjHours" min="0.5" max="24" step="0.5" value="1">
-    </div>
-    <div class="modal-row">
-      <label>Fecha</label>
-      <input type="date" id="adjDate">
-    </div>
-    <div class="modal-row">
-      <label>Motivo (opcional)</label>
-      <textarea id="adjNote" placeholder="Ej: cierre por lluvia, horas extra San Juan…"></textarea>
-    </div>
+    <div class="modal-row"><label>Tipo de ajuste</label><select id="adjType"><option value="extra">+ Horas extra</option><option value="menos">− Horas a descontar</option></select></div>
+    <div class="modal-row"><label>Horas (ej: 2 o 1.5)</label><input type="number" id="adjHours" min="0.5" max="24" step="0.5" value="1"></div>
+    <div class="modal-row"><label>Fecha</label><input type="date" id="adjDate"></div>
+    <div class="modal-row"><label>Motivo (opcional)</label><textarea id="adjNote" placeholder="Ej: cierre por lluvia, horas extra San Juan…"></textarea></div>
     <div id="adjHistory" class="adj-history" style="display:none"></div>
-    <div class="modal-btns">
-      <button class="btn" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveAdj()">Guardar ajuste</button>
-    </div>
+    <div class="modal-btns"><button class="btn" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="saveAdj()">Guardar ajuste</button></div>
   </div>
 </div>
 
 <script>
-// ── DATOS ──────────────────────────────────────────────────────────────────
 const REF_MONDAY = new Date(2026,5,29); REF_MONDAY.setHours(0,0,0,0);
 const START_DATE = new Date(2026,6,1);  START_DATE.setHours(0,0,0,0);
 const H = 6.5;
@@ -306,28 +265,52 @@ const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Ago
 const AVATARS   = ['#deeaf8','#fae5d8','#ddf0d0','#faebd0','#e8e0f8','#fde8d8','#d8f0e8'];
 const AV_TEXT   = ['#1a3d6e','#7a2e0e','#1e5c0a','#7a4a08','#3d1a6e','#6e3a1a','#0a5c3a'];
 
-let EMPS = [
-  {id:0,name:'Iciar',    role:'Fija mañanas',        fixedShift:'M',dayOff:4},
-  {id:1,name:'Oihana',   role:'Fija tardes',         fixedShift:'T',dayOff:5},
-  {id:2,name:'Leire B.', role:'Rotación ×2 (par A)', pairPhase:0,  dayOff:0},
-  {id:3,name:'Iker G.',  role:'Rotación ×2 (par A)', pairPhase:1,  dayOff:1},
-  {id:4,name:'Marta F.', role:'Rotación semanal',    rotId:0,      dayOff:2},
-  {id:5,name:'Julien D.',role:'Rotación semanal',    rotId:1,      dayOff:3},
-  {id:6,name:'Sofía P.', role:'Comodín cobertura',   cover:true,   dayOff:6},
-];
-try{const s=localStorage.getItem('bdp_names');if(s)JSON.parse(s).forEach((n,i)=>{if(EMPS[i])EMPS[i].name=n;});}catch(e){}
+// ── DATOS POR TIENDA ───────────────────────────────────────────────────────
+const STORES = {
+  comptoir: {
+    label: 'Comptoir des Océans',
+    startDate: START_DATE,
+    shiftH: 6.5,
+    emps: [
+      {id:0,name:'Iciar',    role:'Fija mañanas',        fixedShift:'M',dayOff:4},
+      {id:1,name:'Oihana',   role:'Fija tardes',         fixedShift:'T',dayOff:5},
+      {id:2,name:'Leire B.', role:'Rotación ×2 (par A)', pairPhase:0,  dayOff:0},
+      {id:3,name:'Iker G.',  role:'Rotación ×2 (par A)', pairPhase:1,  dayOff:1},
+      {id:4,name:'Marta F.', role:'Rotación semanal',    rotId:0,      dayOff:2},
+      {id:5,name:'Julien D.',role:'Rotación semanal',    rotId:1,      dayOff:3},
+      {id:6,name:'Sofía P.', role:'Comodín cobertura',   cover:true,   dayOff:6},
+    ]
+  },
+  boutique: { label:'Boutique de la Plage', startDate:START_DATE, shiftH:6.5, emps:[] },
+  hondartza: { label:'Hondartza', startDate:START_DATE, shiftH:9, emps:[] },
+};
 
-let ADJS=[];
-try{const s=localStorage.getItem('bdp_adj');if(s)ADJS=JSON.parse(s);}catch(e){}
+// Cargar nombres guardados
+['comptoir','boutique','hondartza'].forEach(s=>{
+  try{
+    const n=localStorage.getItem('bdp_names_'+s);
+    if(n)JSON.parse(n).forEach((name,i)=>{if(STORES[s].emps[i])STORES[s].emps[i].name=name;});
+  }catch(e){}
+});
 
-let weekOffset=0, monthOffset=0, empMonthOffset=0, currentTab='weekly', selectedEmp=0, modalEmpId=null;
+// Ajustes por tienda
+const ADJS = {comptoir:[],boutique:[],hondartza:[]};
+['comptoir','boutique','hondartza'].forEach(s=>{
+  try{const a=localStorage.getItem('bdp_adj_'+s);if(a)ADJS[s]=JSON.parse(a);}catch(e){}
+});
 
-// ── TURNOS ─────────────────────────────────────────────────────────────────
-function getMondayOf(date){
-  const d=new Date(date);d.setHours(0,0,0,0);
-  const dow=d.getDay(),diff=dow===0?-6:1-dow;
-  d.setDate(d.getDate()+diff);return d;
-}
+// Estado por tienda
+const STATE = {
+  comptoir:  {weekOffset:0,monthOffset:0,empMonthOffset:0,currentView:'weekly',selectedEmp:0},
+  boutique:  {weekOffset:0,monthOffset:0,empMonthOffset:0,currentView:'weekly',selectedEmp:0},
+  hondartza: {weekOffset:0,monthOffset:0,empMonthOffset:0,currentView:'weekly',selectedEmp:0},
+};
+
+let currentStore = 'comptoir';
+let modalEmpId = null, modalStore = null;
+
+// ── HELPERS ────────────────────────────────────────────────────────────────
+function getMondayOf(date){const d=new Date(date);d.setHours(0,0,0,0);const dow=d.getDay(),diff=dow===0?-6:1-dow;d.setDate(d.getDate()+diff);return d;}
 function wOff(date){return Math.round((getMondayOf(date)-REF_MONDAY)/(7*86400000));}
 function baseShift(emp,wo){
   if(emp.fixedShift)return emp.fixedShift;
@@ -335,45 +318,50 @@ function baseShift(emp,wo){
   if(emp.rotId!==undefined)return(((wo+emp.rotId)%2+2)%2===0)?'M':'T';
   return'M';
 }
-function getShift(emp,date){
+function getShift(emps,emp,date){
   const d=new Date(date);d.setHours(0,0,0,0);
   const dow=d.getDay(),di=dow===0?6:dow-1;
   if(di===emp.dayOff)return'OFF';
   const wo2=wOff(d);
-  if(emp.cover){const r=EMPS.find(e=>!e.cover&&e.dayOff===di);return r?(baseShift(r,wo2)==='M'?'M':'T'):'M';}
+  if(emp.cover){const r=emps.find(e=>!e.cover&&e.dayOff===di);return r?(baseShift(r,wo2)==='M'?'M':'T'):'M';}
   return baseShift(emp,wo2);
 }
 function works(t){return t==='M'||t==='T';}
 function pilLabel(t){return{M:'Mañana',T:'Tarde',OFF:'Festivo'}[t]||'';}
 function initials(name){return name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();}
 function fmt(d){return d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'});}
+function getMondayOfWeek(off){const d=new Date(REF_MONDAY);d.setDate(REF_MONDAY.getDate()+off*7);return d;}
+function getWeekNum(date){const d=new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate()));const dn=d.getUTCDay()||7;d.setUTCDate(d.getUTCDate()+4-dn);const ys=new Date(Date.UTC(d.getUTCFullYear(),0,1));return Math.ceil((((d-ys)/86400000)+1)/7);}
 
 // ── HORAS ──────────────────────────────────────────────────────────────────
-function baseHours(empId,before){
-  let h=0;const cur=new Date(START_DATE);const end=new Date(before);end.setHours(0,0,0,0);
-  while(cur<end){if(works(getShift(EMPS[empId],cur)))h+=H;cur.setDate(cur.getDate()+1);}
+function baseHours(store,empId,before){
+  const sh=STORES[store];
+  let h=0;const cur=new Date(sh.startDate);const end=new Date(before);end.setHours(0,0,0,0);
+  while(cur<end){if(works(getShift(sh.emps,sh.emps[empId],cur)))h+=sh.shiftH;cur.setDate(cur.getDate()+1);}
   return h;
 }
-function adjHoursUntil(empId,before){
+function adjHoursUntil(store,empId,before){
   const end=new Date(before);end.setHours(0,0,0,0);
-  return ADJS.filter(a=>a.empId===empId&&new Date(a.date+'T12:00')<end).reduce((s,a)=>s+a.hours,0);
+  return ADJS[store].filter(a=>a.empId===empId&&new Date(a.date+'T12:00')<end).reduce((s,a)=>s+a.hours,0);
 }
-function totalAcc(empId,before){return baseHours(empId,before)+adjHoursUntil(empId,before);}
-function saveAdjs(){try{localStorage.setItem('bdp_adj',JSON.stringify(ADJS));}catch(e){}}
+function totalAcc(store,empId,before){return baseHours(store,empId,before)+adjHoursUntil(store,empId,before);}
+function saveAdjs(store){try{localStorage.setItem('bdp_adj_'+store,JSON.stringify(ADJS[store]));}catch(e){}}
 
-// ── PANEL HORAS ────────────────────────────────────────────────────────────
-function renderHours(weekHoursArr){
+// ── RENDER HORAS ───────────────────────────────────────────────────────────
+function renderHours(store,weekHoursArr){
+  const sh=STORES[store];
   const today=new Date();today.setHours(0,0,0,0);
-  const before=today<START_DATE?START_DATE:today;
-  const isBS=today<START_DATE;
-  document.getElementById('accTitle').textContent=isBS?'Horas proyectadas al inicio':'Horas acumuladas desde el 1 de julio';
+  const before=today<sh.startDate?sh.startDate:today;
+  const isBS=today<sh.startDate;
+  document.getElementById('accTitle-'+store).textContent=isBS?'Horas proyectadas al inicio':'Horas acumuladas desde el 1 de julio';
   const fd=before.toLocaleDateString('es-ES',{day:'2-digit',month:'long',year:'numeric'});
-  document.getElementById('accSubtitle').textContent=isBS?'Temporada empieza el 1 jul 2026':`Al ${fd}`;
-  const maxRef=26*H;
-  const grid=document.getElementById('hoursGrid');grid.innerHTML='';
-  EMPS.forEach((emp,i)=>{
-    const acc=totalAcc(i,before);
-    const adj=adjHoursUntil(i,before);
+  document.getElementById('accSubtitle-'+store).textContent=isBS?'Temporada empieza el 1 jul 2026':`Al ${fd}`;
+  const maxRef=26*sh.shiftH;
+  const grid=document.getElementById('hoursGrid-'+store);grid.innerHTML='';
+  if(!sh.emps.length){grid.innerHTML='<div style="font-size:13px;color:var(--muted);padding:8px 0">Sin empleados configurados todavía.</div>';return;}
+  sh.emps.forEach((emp,i)=>{
+    const acc=totalAcc(store,i,before);
+    const adj=adjHoursUntil(store,i,before);
     const wh=weekHoursArr?weekHoursArr[i]:0;
     const pct=Math.min(100,Math.round((acc/maxRef)*100));
     const adjL=adj!==0?`<div class="acc-card-adj ${adj>0?'pos':'neg'}">${adj>0?'+':''}${adj.toFixed(1)}h ajustes</div>`:'';
@@ -385,296 +373,258 @@ function renderHours(weekHoursArr){
       ${adjL}
       <div class="acc-bar-wrap"><div class="acc-bar" style="width:${pct}%"></div></div>
       ${weekHoursArr?`<div class="acc-card-week">Esta semana: <strong>${wh.toFixed(1)}h</strong></div>`:''}
-      <div class="adj-btn-row no-print">
-        <button class="btn btn-sm" onclick="openModal(${i})">＋／－ Ajustar</button>
-      </div>
+      <div class="adj-btn-row no-print"><button class="btn btn-sm" onclick="openModal('${store}',${i})">＋／－ Ajustar</button></div>
     </div>`;
   });
 }
 
 // ── MODAL ──────────────────────────────────────────────────────────────────
-function openModal(empId){
-  modalEmpId=empId;
-  document.getElementById('modalTitle').textContent='Ajustar horas — '+EMPS[empId].name;
-  document.getElementById('modalSub').textContent='Añade o descuenta horas puntuales';
+function openModal(store,empId){
+  modalStore=store;modalEmpId=empId;
+  const emp=STORES[store].emps[empId];
+  document.getElementById('modalTitle').textContent='Ajustar horas — '+emp.name;
+  document.getElementById('modalSub').textContent='Añade o descuenta horas puntuales ('+STORES[store].label+')';
   const today=new Date();
   document.getElementById('adjDate').value=(today<START_DATE?START_DATE:today).toISOString().slice(0,10);
   document.getElementById('adjHours').value='1';
   document.getElementById('adjType').value='extra';
   document.getElementById('adjNote').value='';
-  const adjs=ADJS.filter(a=>a.empId===empId).sort((a,b)=>b.date.localeCompare(a.date));
+  const adjs=ADJS[store].filter(a=>a.empId===empId).sort((a,b)=>b.date.localeCompare(a.date));
   const hDiv=document.getElementById('adjHistory');
   if(adjs.length){
     hDiv.style.display='block';
     hDiv.innerHTML='<h4>Ajustes anteriores</h4>'+adjs.map(a=>`
       <div class="adj-item">
         <span class="adj-badge ${a.hours>0?'pos':'neg'}">${a.hours>0?'+':''}${a.hours.toFixed(1)}h</span>
-        <div>
-          <div class="adj-date">${new Date(a.date+'T12:00').toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'})}</div>
-          ${a.note?`<div class="adj-note">${a.note}</div>`:''}
-        </div>
-        <button class="btn btn-sm btn-danger" style="margin-left:auto;padding:2px 8px;font-size:11px" onclick="deleteAdj(${ADJS.indexOf(a)})">✕</button>
+        <div><div class="adj-date">${new Date(a.date+'T12:00').toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'numeric'})}</div>${a.note?`<div class="adj-note">${a.note}</div>`:''}</div>
+        <button class="btn btn-sm btn-danger" style="margin-left:auto;padding:2px 8px;font-size:11px" onclick="deleteAdj(${ADJS[store].indexOf(a)})">✕</button>
       </div>`).join('');
-  } else { hDiv.style.display='none'; hDiv.innerHTML=''; }
+  } else {hDiv.style.display='none';hDiv.innerHTML='';}
   document.getElementById('adjModal').classList.add('open');
 }
-function closeModal(){document.getElementById('adjModal').classList.remove('open');modalEmpId=null;}
+function closeModal(){document.getElementById('adjModal').classList.remove('open');modalEmpId=null;modalStore=null;}
 function saveAdj(){
   const type=document.getElementById('adjType').value;
   const rawH=parseFloat(document.getElementById('adjHours').value);
   const date=document.getElementById('adjDate').value;
   const note=document.getElementById('adjNote').value.trim();
   if(isNaN(rawH)||rawH<=0||!date){alert('Rellena las horas y la fecha.');return;}
-  ADJS.push({empId:modalEmpId,date,hours:type==='extra'?rawH:-rawH,note});
-  saveAdjs();closeModal();renderAll();
+  ADJS[modalStore].push({empId:modalEmpId,date,hours:type==='extra'?rawH:-rawH,note});
+  saveAdjs(modalStore);closeModal();renderStore(modalStore);
 }
 function deleteAdj(idx){
   if(!confirm('¿Eliminar este ajuste?'))return;
-  ADJS.splice(idx,1);saveAdjs();closeModal();renderAll();
+  ADJS[modalStore].splice(idx,1);saveAdjs(modalStore);closeModal();renderStore(modalStore);
 }
 document.getElementById('adjModal').addEventListener('click',function(e){if(e.target===this)closeModal();});
 
 // ── SEMANA ─────────────────────────────────────────────────────────────────
-function getMondayOfWeek(off){const d=new Date(REF_MONDAY);d.setDate(REF_MONDAY.getDate()+off*7);return d;}
-function getWeekNum(date){
-  const d=new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate()));
-  const dn=d.getUTCDay()||7;d.setUTCDate(d.getUTCDate()+4-dn);
-  const ys=new Date(Date.UTC(d.getUTCFullYear(),0,1));
-  return Math.ceil((((d-ys)/86400000)+1)/7);
-}
-function calcWeekH(monday){
-  return EMPS.map(emp=>{let h=0;for(let d=0;d<7;d++){const dt=new Date(monday);dt.setDate(monday.getDate()+d);if(dt<START_DATE)continue;if(works(getShift(emp,dt)))h+=H;}return h;});
+function calcWeekH(store,monday){
+  const sh=STORES[store];
+  return sh.emps.map(emp=>{let h=0;for(let d=0;d<7;d++){const dt=new Date(monday);dt.setDate(monday.getDate()+d);if(dt<sh.startDate)continue;if(works(getShift(sh.emps,emp,dt)))h+=sh.shiftH;}return h;});
 }
 
-function renderWeekly(){
-  const monday=getMondayOfWeek(weekOffset);
+function renderWeekly(store){
+  const sh=STORES[store];const st=STATE[store];
+  const monday=getMondayOfWeek(st.weekOffset);
   const sunday=new Date(monday);sunday.setDate(monday.getDate()+6);
-  document.getElementById('weekLabel').textContent=fmt(monday)+' – '+fmt(sunday);
-  document.getElementById('weekNum').textContent='Semana '+getWeekNum(monday)+' · '+monday.getFullYear();
+  document.getElementById('weekLabel-'+store).textContent=fmt(monday)+' – '+fmt(sunday);
+  document.getElementById('weekNum-'+store).textContent='Semana '+getWeekNum(monday)+' · '+monday.getFullYear();
   const today=new Date();today.setHours(0,0,0,0);
-  const bar=document.getElementById('infoBar'),info=document.getElementById('infoText');
-  if(sunday<START_DATE){info.textContent='La temporada aún no ha comenzado (arranca el 1 de julio 2026)';bar.style.display='flex';}
-  else if(monday<START_DATE){info.textContent='La temporada arranca el 1 de julio en esta semana';bar.style.display='flex';}
+  const bar=document.getElementById('infoBar-'+store),info=document.getElementById('infoText-'+store);
+  if(sunday<sh.startDate){info.textContent='La temporada aún no ha comenzado (arranca el 1 de julio 2026)';bar.style.display='flex';}
+  else if(monday<sh.startDate){info.textContent='La temporada arranca el 1 de julio en esta semana';bar.style.display='flex';}
   else bar.style.display='none';
 
-  const weekH=calcWeekH(monday);
-  renderHours(weekH);
+  const weekH=calcWeekH(store,monday);
+  renderHours(store,weekH);
 
-  const hRow=document.getElementById('headerRow');
+  const hRow=document.getElementById('headerRow-'+store);
   hRow.innerHTML='<th>Empleado</th>';
   for(let d=0;d<7;d++){
     const dt=new Date(monday);dt.setDate(monday.getDate()+d);
-    const isToday=dt.getTime()===today.getTime(),dim=dt<START_DATE;
-    const resting=EMPS.find(e=>e.dayOff===d);
+    const isToday=dt.getTime()===today.getTime(),dim=dt<sh.startDate;
+    const resting=sh.emps.find(e=>e.dayOff===d);
     hRow.innerHTML+=`<th class="${isToday?'today-col':''}" style="${dim?'opacity:.35':''}">
       ${DAYS_S[d]}<br><span style="font-weight:400;font-size:10px">${fmt(dt)}</span><br>
       <span style="font-weight:400;font-size:10px;color:${isToday?'#2a5fa5':'#9a9890'}">libre: ${resting?resting.name:''}</span>
     </th>`;
   }
 
-  const body=document.getElementById('scheduleBody');body.innerHTML='';
+  const body=document.getElementById('scheduleBody-'+store);body.innerHTML='';
   let tM=0,tT=0,tOff=0;
-  EMPS.forEach((emp,i)=>{
-    const tr=document.createElement('tr');
-    let cells='';
+  sh.emps.forEach((emp,i)=>{
+    const tr=document.createElement('tr');let cells='';
     for(let d=0;d<7;d++){
       const dt=new Date(monday);dt.setDate(monday.getDate()+d);
-      const dim=dt<START_DATE,isToday=dt.getTime()===today.getTime();
-      const type=dim?null:getShift(emp,dt);
+      const dim=dt<sh.startDate,isToday=dt.getTime()===today.getTime();
+      const type=dim?null:getShift(sh.emps,emp,dt);
       if(!dim){if(type==='M')tM++;else if(type==='T')tT++;else if(type==='OFF')tOff++;}
       cells+=`<td class="${isToday?'today-cell':''}" style="${dim?'opacity:.2':''}">
         ${!dim&&type?`<span class="pill pill-${type}">${pilLabel(type)}</span>`:'–'}
       </td>`;
     }
-    const wa=ADJS.filter(a=>{const ad=new Date(a.date+'T12:00');ad.setHours(0,0,0,0);return a.empId===i&&ad>=monday&&ad<=sunday;}).reduce((s,a)=>s+a.hours,0);
-    tr.innerHTML=`<td>
-      <div class="emp-name">${emp.name}</div>
-      <div class="emp-role">${emp.role}</div>
-      <div class="emp-acc">Esta semana: ${weekH[i].toFixed(1)}h${wa!==0?` (${wa>0?'+':''}${wa.toFixed(1)}h)`:''}</div>
-    </td>${cells}`;
+    const wa=ADJS[store].filter(a=>{const ad=new Date(a.date+'T12:00');ad.setHours(0,0,0,0);return a.empId===i&&ad>=monday&&ad<=sunday;}).reduce((s,a)=>s+a.hours,0);
+    tr.innerHTML=`<td><div class="emp-name">${emp.name}</div><div class="emp-role">${emp.role}</div><div class="emp-acc">Esta semana: ${weekH[i].toFixed(1)}h${wa!==0?` (${wa>0?'+':''}${wa.toFixed(1)}h)`:''}</div></td>${cells}`;
     body.appendChild(tr);
   });
 
-  document.getElementById('statsRow').innerHTML=`
+  document.getElementById('statsRow-'+store).innerHTML=`
     <div class="stat"><div class="stat-label">Turnos mañana</div><div class="stat-value" style="color:var(--M-text)">${tM}</div><div class="stat-sub">esta semana</div></div>
     <div class="stat"><div class="stat-label">Turnos tarde</div><div class="stat-value" style="color:var(--T-text)">${tT}</div><div class="stat-sub">esta semana</div></div>
     <div class="stat"><div class="stat-label">Festivos</div><div class="stat-value">${tOff}</div><div class="stat-sub">esta semana</div></div>
-    <div class="stat"><div class="stat-label">Horas equipo</div><div class="stat-value">${((tM+tT)*H).toFixed(0)}h</div><div class="stat-sub">esta semana</div></div>`;
+    <div class="stat"><div class="stat-label">Horas equipo</div><div class="stat-value">${((tM+tT)*sh.shiftH).toFixed(0)}h</div><div class="stat-sub">esta semana</div></div>`;
 }
 
 // ── MES ────────────────────────────────────────────────────────────────────
-function renderMonthly(){
-  const base=new Date(2026,6+monthOffset,1);
+function renderMonthly(store){
+  const sh=STORES[store];const st=STATE[store];
+  const base=new Date(2026,6+st.monthOffset,1);
   const yr=base.getFullYear(),mo=base.getMonth();
-  document.getElementById('monthLabel').textContent=MONTHS_ES[mo]+' '+yr;
+  document.getElementById('monthLabel-'+store).textContent=MONTHS_ES[mo]+' '+yr;
   const first=new Date(yr,mo,1),last=new Date(yr,mo+1,0);
   const today=new Date();today.setHours(0,0,0,0);
   let sdow=first.getDay()-1;if(sdow<0)sdow=6;
-  const grid=document.getElementById('monthGrid');grid.innerHTML='';
+  const grid=document.getElementById('monthGrid-'+store);grid.innerHTML='';
   DAYS_S.forEach(d=>{grid.innerHTML+=`<div class="month-day-hdr">${d}</div>`;});
   for(let i=0;i<sdow;i++)grid.innerHTML+=`<div class="month-cell inactive"></div>`;
   for(let day=1;day<=last.getDate();day++){
     const date=new Date(yr,mo,day);date.setHours(0,0,0,0);
-    const isToday=date.getTime()===today.getTime(),bs=date<START_DATE;
+    const isToday=date.getTime()===today.getTime(),bs=date<sh.startDate;
     let cls='month-cell'+(isToday?' today-month':'')+(bs?' before-start':'');
     let pills='';
-    EMPS.forEach(emp=>{
-      const t=getShift(emp,date);
+    sh.emps.forEach(emp=>{
+      const t=getShift(sh.emps,emp,date);
       pills+=`<span class="month-pill mp-${t}" title="${emp.name}: ${pilLabel(t)}">${emp.name.split(' ')[0]} ${t==='OFF'?'🏖':t}</span>`;
     });
     grid.innerHTML+=`<div class="${cls}"><div class="month-date ${isToday?'is-today':''}">${day}</div>${pills}</div>`;
   }
   const rem=(sdow+last.getDate())%7;
   if(rem>0)for(let i=0;i<7-rem;i++)grid.innerHTML+=`<div class="month-cell inactive"></div>`;
-  renderHours(null);
+  renderHours(store,null);
 }
 
-// ── VISTA POR EMPLEADO ─────────────────────────────────────────────────────
-function buildEmpSelect(){
-  const sel=document.getElementById('empSelect');sel.innerHTML='';
-  EMPS.forEach((emp,i)=>sel.innerHTML+=`<option value="${i}">${emp.name} — ${emp.role}</option>`);
-  sel.value=selectedEmp;
+// ── POR EMPLEADO ───────────────────────────────────────────────────────────
+function buildEmpSelect(store){
+  const sh=STORES[store];const st=STATE[store];
+  const sel=document.getElementById('empSelect-'+store);sel.innerHTML='';
+  sh.emps.forEach((emp,i)=>sel.innerHTML+=`<option value="${i}">${emp.name} — ${emp.role}</option>`);
+  sel.value=st.selectedEmp;
 }
-
-function renderEmpView(){
-  selectedEmp=parseInt(document.getElementById('empSelect').value);
-  const emp=EMPS[selectedEmp];
-
-  // Perfil
-  const av=AVATARS[selectedEmp%AVATARS.length];
-  const avt=AV_TEXT[selectedEmp%AV_TEXT.length];
+function renderEmpView(store){
+  const sh=STORES[store];const st=STATE[store];
+  st.selectedEmp=parseInt(document.getElementById('empSelect-'+store).value);
+  const emp=sh.emps[st.selectedEmp];
+  const av=AVATARS[st.selectedEmp%AVATARS.length],avt=AV_TEXT[st.selectedEmp%AV_TEXT.length];
   const today=new Date();today.setHours(0,0,0,0);
-  const before=today<START_DATE?START_DATE:today;
-  const acc=totalAcc(selectedEmp,before);
-  const adj=adjHoursUntil(selectedEmp,before);
-  document.getElementById('empProfile').innerHTML=`
+  const before=today<sh.startDate?sh.startDate:today;
+  const acc=totalAcc(store,st.selectedEmp,before);
+  const adj=adjHoursUntil(store,st.selectedEmp,before);
+  document.getElementById('empProfile-'+store).innerHTML=`
     <div class="emp-avatar" style="background:${av};color:${avt}">${initials(emp.name)}</div>
-    <div class="emp-profile-info">
-      <h3>${emp.name}</h3>
-      <p>${emp.role} · Libra los ${['lunes','martes','miércoles','jueves','viernes','sábados','domingos'][emp.dayOff]}</p>
-    </div>
+    <div class="emp-profile-info"><h3>${emp.name}</h3><p>${emp.role} · Libra los ${['lunes','martes','miércoles','jueves','viernes','sábados','domingos'][emp.dayOff]}</p></div>
     <div style="margin-left:auto;text-align:right;">
       <div style="font-size:24px;font-weight:600;font-family:'DM Mono',monospace;color:var(--accent)">${acc.toFixed(1)}<span style="font-size:14px;color:var(--muted)">h</span></div>
       <div style="font-size:11px;color:var(--muted);">acumuladas${adj!==0?` · <span style="color:${adj>0?'#1e5c0a':'#a00'}">${adj>0?'+':''}${adj.toFixed(1)}h ajustes</span>`:''}</div>
     </div>
-    <div class="no-print"><button class="btn btn-sm" onclick="openModal(${selectedEmp})">＋／－ Ajustar horas</button></div>`;
+    <div class="no-print"><button class="btn btn-sm" onclick="openModal('${store}',${st.selectedEmp})">＋／－ Ajustar horas</button></div>`;
 
-  // Mes del empleado
-  const base=new Date(2026,6+empMonthOffset,1);
+  const base=new Date(2026,6+st.empMonthOffset,1);
   const yr=base.getFullYear(),mo=base.getMonth();
-  document.getElementById('empMonthLabel').textContent=MONTHS_ES[mo]+' '+yr;
-
+  document.getElementById('empMonthLabel-'+store).textContent=MONTHS_ES[mo]+' '+yr;
   const first=new Date(yr,mo,1),last=new Date(yr,mo+1,0);
   let sdow=first.getDay()-1;if(sdow<0)sdow=6;
-
   let mM=0,mT=0,mOff=0,mH=0;
-  for(let d=1;d<=last.getDate();d++){
-    const dt=new Date(yr,mo,d);if(dt<START_DATE)continue;
-    const t=getShift(emp,dt);
-    if(t==='M'){mM++;mH+=H;}else if(t==='T'){mT++;mH+=H;}else if(t==='OFF')mOff++;
-  }
-  const adjMonth=ADJS.filter(a=>{const d=new Date(a.date+'T12:00');return a.empId===selectedEmp&&d.getFullYear()===yr&&d.getMonth()===mo;}).reduce((s,a)=>s+a.hours,0);
-
-  document.getElementById('empMonthStats').innerHTML=`
+  for(let d=1;d<=last.getDate();d++){const dt=new Date(yr,mo,d);if(dt<sh.startDate)continue;const t=getShift(sh.emps,emp,dt);if(t==='M'){mM++;mH+=sh.shiftH;}else if(t==='T'){mT++;mH+=sh.shiftH;}else if(t==='OFF')mOff++;}
+  const adjMonth=ADJS[store].filter(a=>{const d=new Date(a.date+'T12:00');return a.empId===st.selectedEmp&&d.getFullYear()===yr&&d.getMonth()===mo;}).reduce((s,a)=>s+a.hours,0);
+  document.getElementById('empMonthStats-'+store).innerHTML=`
     <div class="stat"><div class="stat-label">Mañanas</div><div class="stat-value" style="color:var(--M-text)">${mM}</div><div class="stat-sub">este mes</div></div>
     <div class="stat"><div class="stat-label">Tardes</div><div class="stat-value" style="color:var(--T-text)">${mT}</div><div class="stat-sub">este mes</div></div>
     <div class="stat"><div class="stat-label">Festivos</div><div class="stat-value">${mOff}</div><div class="stat-sub">este mes</div></div>
     <div class="stat"><div class="stat-label">Horas base</div><div class="stat-value">${mH.toFixed(0)}h</div><div class="stat-sub">este mes</div></div>
     ${adjMonth!==0?`<div class="stat"><div class="stat-label">Ajustes</div><div class="stat-value" style="color:${adjMonth>0?'#1e5c0a':'#a00'}">${adjMonth>0?'+':''}${adjMonth.toFixed(1)}h</div><div class="stat-sub">este mes</div></div>`:''}`;
 
-  // Calendario personal
-  const grid=document.getElementById('empMonthGrid');grid.innerHTML='';
+  const grid=document.getElementById('empMonthGrid-'+store);grid.innerHTML='';
   DAYS_S.forEach(d=>{grid.innerHTML+=`<div class="emp-day-hdr">${d}</div>`;});
   for(let i=0;i<sdow;i++)grid.innerHTML+=`<div class="emp-day inactive"></div>`;
   for(let day=1;day<=last.getDate();day++){
     const date=new Date(yr,mo,day);date.setHours(0,0,0,0);
-    const isToday=date.getTime()===today.getTime(),bs=date<START_DATE;
-    const t=getShift(emp,date);
-    const shortLabel=t==='OFF'?'Libre':t==='M'?'Mañana':'Tarde';
-    grid.innerHTML+=`<div class="emp-day d-${t}${isToday?' d-today':''}${bs?' before-start':''}">
-      <div class="emp-day-num ${isToday?'is-today':''}">${day}</div>
-      <div class="emp-day-shift">${shortLabel}</div>
-    </div>`;
+    const isToday=date.getTime()===today.getTime(),bs=date<sh.startDate;
+    const t=getShift(sh.emps,emp,date);
+    const sl=t==='OFF'?'Libre':t==='M'?'Mañana':'Tarde';
+    grid.innerHTML+=`<div class="emp-day d-${t}${isToday?' d-today':''}${bs?' before-start':''}"><div class="emp-day-num ${isToday?'is-today':''}">${day}</div><div class="emp-day-shift">${sl}</div></div>`;
   }
   const rem=(sdow+last.getDate())%7;
   if(rem>0)for(let i=0;i<7-rem;i++)grid.innerHTML+=`<div class="emp-day inactive"></div>`;
 }
 
-// ── EXPORT PDF ─────────────────────────────────────────────────────────────
-function exportPDF(){
-  // Elegir qué exportar
-  const choice=prompt('¿Qué quieres exportar?\n1 — Vista de semana actual\n2 — Vista de mes actual\n3 — Ficha de empleado (vista actual)\n\nEscribe 1, 2 o 3:');
-  if(!choice)return;
-
-  const c=choice.trim();
-  if(c==='1'){
-    document.querySelectorAll('.tabs .tab').forEach(t=>t.classList.remove('active'));
-    document.getElementById('tab-weekly').classList.add('active');
-    showView('weeklyView');
-    renderWeekly();
-  } else if(c==='2'){
-    document.querySelectorAll('.tabs .tab').forEach(t=>t.classList.remove('active'));
-    document.getElementById('tab-monthly').classList.add('active');
-    showView('monthlyView');
-    renderMonthly();
-  } else if(c==='3'){
-    document.querySelectorAll('.tabs .tab').forEach(t=>t.classList.remove('active'));
-    document.getElementById('tab-emp').classList.add('active');
-    showView('empView');
-    renderEmpView();
-  } else { alert('Opción no válida'); return; }
-
-  setTimeout(()=>window.print(),200);
-}
-
 // ── SETTINGS ───────────────────────────────────────────────────────────────
-function buildSettings(){
-  const g=document.getElementById('settingsGrid');g.innerHTML='';
-  EMPS.forEach((emp,i)=>{g.innerHTML+=`<div class="setting-row"><label>${emp.role}</label><input type="text" id="ei-${i}" value="${emp.name}"></div>`;});
-}
-function saveSettings(){
-  EMPS.forEach((emp,i)=>{const el=document.getElementById('ei-'+i);if(el)emp.name=el.value.trim()||emp.name;});
-  try{localStorage.setItem('bdp_names',JSON.stringify(EMPS.map(e=>e.name)));}catch(e){}
-  if(currentTab==='emp')buildEmpSelect();
-  toggleSettings();renderAll();
-}
-function toggleSettings(){
-  const p=document.getElementById('settingsPanel');
-  if(!p.classList.contains('open'))buildSettings();
+function toggleSettings(store){
+  const p=document.getElementById('settingsPanel-'+store);
+  if(!p.classList.contains('open')){
+    const g=document.getElementById('settingsGrid-'+store);g.innerHTML='';
+    STORES[store].emps.forEach((emp,i)=>{g.innerHTML+=`<div class="setting-row"><label>${emp.role}</label><input type="text" id="ei-${store}-${i}" value="${emp.name}"></div>`;});
+  }
   p.classList.toggle('open');
 }
-function resetAdjs(){
-  if(!confirm('¿Borrar todos los ajustes de horas guardados?'))return;
-  ADJS=[];saveAdjs();renderAll();toggleSettings();
+function saveSettings(store){
+  STORES[store].emps.forEach((emp,i)=>{const el=document.getElementById('ei-'+store+'-'+i);if(el)emp.name=el.value.trim()||emp.name;});
+  try{localStorage.setItem('bdp_names_'+store,JSON.stringify(STORES[store].emps.map(e=>e.name)));}catch(e){}
+  document.getElementById('settingsPanel-'+store).classList.remove('open');
+  renderStore(store);
+}
+function resetAdjs(store){
+  if(!confirm('¿Borrar todos los ajustes de horas de '+STORES[store].label+'?'))return;
+  ADJS[store]=[];saveAdjs(store);
+  document.getElementById('settingsPanel-'+store).classList.remove('open');
+  renderStore(store);
 }
 
-// ── TABS & NAV ─────────────────────────────────────────────────────────────
-function showView(id){
-  ['weeklyView','monthlyView','empView'].forEach(v=>document.getElementById(v).style.display=v===id?'block':'none');
-}
-function switchTab(tab,el){
-  currentTab=tab;
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+// ── NAVEGACIÓN ─────────────────────────────────────────────────────────────
+function switchStore(store,el){
+  currentStore=store;
+  document.querySelectorAll('.store-tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
-  if(tab==='emp'){showView('empView');buildEmpSelect();renderEmpView();}
-  else if(tab==='monthly'){showView('monthlyView');renderMonthly();}
-  else{showView('weeklyView');renderWeekly();}
-}
-function changeWeek(d){weekOffset+=d;renderWeekly();}
-function changeMonth(d){monthOffset+=d;renderMonthly();}
-function changeEmpMonth(d){empMonthOffset+=d;renderEmpView();}
-
-function renderAll(){
-  renderHours(currentTab==='weekly'?calcWeekH(getMondayOfWeek(weekOffset)):null);
-  if(currentTab==='weekly')renderWeekly();
-  else if(currentTab==='monthly')renderMonthly();
-  else renderEmpView();
+  ['comptoir','boutique','hondartza'].forEach(s=>document.getElementById('store-'+s).style.display=s===store?'block':'none');
+  if(STORES[store].emps.length>0)renderStore(store);
 }
 
-// Init
+function switchView(store,view,el){
+  STATE[store].currentView=view;
+  el.closest('.view-tabs').querySelectorAll('.vtab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  ['weeklyView','monthlyView','empView'].forEach(v=>document.getElementById(v+'-'+store).style.display=v.replace('View','')=== view||v===view+'View'?'block':'none');
+  document.getElementById('weeklyView-'+store).style.display=view==='weekly'?'block':'none';
+  document.getElementById('monthlyView-'+store).style.display=view==='monthly'?'block':'none';
+  document.getElementById('empView-'+store).style.display=view==='emp'?'block':'none';
+  if(view==='emp'){buildEmpSelect(store);renderEmpView(store);}
+  else if(view==='monthly')renderMonthly(store);
+  else renderWeekly(store);
+}
+
+function changeWeek(store,d){STATE[store].weekOffset+=d;renderWeekly(store);}
+function changeMonth(store,d){STATE[store].monthOffset+=d;renderMonthly(store);}
+function changeEmpMonth(store,d){STATE[store].empMonthOffset+=d;renderEmpView(store);}
+
+function renderStore(store){
+  const st=STATE[store];
+  if(st.currentView==='weekly')renderWeekly(store);
+  else if(st.currentView==='monthly')renderMonthly(store);
+  else{buildEmpSelect(store);renderEmpView(store);}
+}
+
+function exportPDF(){
+  setTimeout(()=>window.print(),100);
+}
+
+// ── INIT ───────────────────────────────────────────────────────────────────
 const nowI=new Date();nowI.setHours(0,0,0,0);
-weekOffset=nowI<START_DATE?0:Math.round((getMondayOf(nowI)-REF_MONDAY)/(7*86400000));
-renderWeekly();
+const initOffset=nowI<START_DATE?0:Math.round((getMondayOf(nowI)-REF_MONDAY)/(7*86400000));
+STATE.comptoir.weekOffset=initOffset;
+STATE.boutique.weekOffset=initOffset;
+STATE.hondartza.weekOffset=initOffset;
+
+renderWeekly('comptoir');
 </script>
 </body>
 </html>
