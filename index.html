@@ -90,6 +90,11 @@
   .pill-M{background:var(--M-bg);color:var(--M-text);border-color:var(--M-border);}
   .pill-T{background:var(--T-bg);color:var(--T-text);border-color:var(--T-border);}
   .pill-OFF{background:var(--OFF-bg);color:var(--OFF-text);border-color:var(--OFF-border);}
+  .pill-F{background:#f0e8f8;color:#5a1a7a;border-color:#d4aaee;}
+  .pill-MN{background:#e8f4f0;color:#0a4a3a;border-color:#a0d4c4;}
+  .pill-U{background:#fff4e0;color:#7a4a00;border-color:#f0cc80;}
+  .pill-CN{background:#fce8f0;color:#7a0a3a;border-color:#f0a0c0;}
+  .pill-OH{background:#f4eafc;color:#5a0a7a;border-color:#c8a0e8;}
 
   .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:2rem;}
   .stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;}
@@ -111,6 +116,11 @@
   .mp-M{background:var(--M-bg);color:var(--M-text);}
   .mp-T{background:var(--T-bg);color:var(--T-text);}
   .mp-OFF{background:var(--OFF-bg);color:var(--OFF-text);}
+  .mp-F{background:#f0e8f8;color:#5a1a7a;}
+  .mp-MN{background:#e8f4f0;color:#0a4a3a;}
+  .mp-U{background:#fff4e0;color:#7a4a00;}
+  .mp-CN{background:#fce8f0;color:#7a0a3a;}
+  .mp-OH{background:#f4eafc;color:#5a0a7a;}
 
   .emp-select-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.25rem;align-items:center;}
   .emp-select-bar label{font-size:13px;color:var(--muted);font-weight:500;}
@@ -133,6 +143,16 @@
   .emp-day.d-T .emp-day-num,.emp-day.d-T .emp-day-shift{color:var(--T-text);}
   .emp-day.d-OFF{background:var(--OFF-bg);border-color:var(--OFF-border);}
   .emp-day.d-OFF .emp-day-num,.emp-day.d-OFF .emp-day-shift{color:var(--OFF-text);}
+  .emp-day.d-F{background:#f0e8f8;border-color:#d4aaee;}
+  .emp-day.d-F .emp-day-num,.emp-day.d-F .emp-day-shift{color:#5a1a7a;}
+  .emp-day.d-MN{background:#e8f4f0;border-color:#a0d4c4;}
+  .emp-day.d-MN .emp-day-num,.emp-day.d-MN .emp-day-shift{color:#0a4a3a;}
+  .emp-day.d-U{background:#fff4e0;border-color:#f0cc80;}
+  .emp-day.d-U .emp-day-num,.emp-day.d-U .emp-day-shift{color:#7a4a00;}
+  .emp-day.d-CN{background:#fce8f0;border-color:#f0a0c0;}
+  .emp-day.d-CN .emp-day-num,.emp-day.d-CN .emp-day-shift{color:#7a0a3a;}
+  .emp-day.d-OH{background:#f4eafc;border-color:#c8a0e8;}
+  .emp-day.d-OH .emp-day-num,.emp-day.d-OH .emp-day-shift{color:#5a0a7a;}
   .emp-day.d-today{box-shadow:0 0 0 2px var(--accent);}
   .emp-month-nav{display:flex;align-items:center;gap:12px;margin-bottom:1rem;}
   .emp-month-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:1.5rem;}
@@ -220,7 +240,7 @@
   <div id="weeklyView-comptoir">
     <div class="week-nav"><button class="btn no-print" onclick="changeWeek('comptoir',-1)">← Anterior</button><div><div class="week-label" id="weekLabel-comptoir"></div><span class="week-sub" id="weekNum-comptoir"></span></div><button class="btn no-print" onclick="changeWeek('comptoir',1)">Siguiente →</button></div>
     <div class="info-bar" id="infoBar-comptoir"><span id="infoText-comptoir"></span></div>
-    <div class="legend"><div class="leg"><div class="leg-dot" style="background:var(--M-bg);border:1px solid var(--M-border)"></div>Mañana (10–16:30)</div><div class="leg"><div class="leg-dot" style="background:var(--T-bg);border:1px solid var(--T-border)"></div>Tarde (16:30–23)</div><div class="leg"><div class="leg-dot" style="background:var(--OFF-bg);border:1px solid var(--OFF-border)"></div>Festivo</div></div>
+    <div class="legend"><div class="leg"><div class="leg-dot" style="background:var(--M-bg);border:1px solid var(--M-border)"></div>Mañana (10–16:30)</div><div class="leg"><div class="leg-dot" style="background:var(--T-bg);border:1px solid var(--T-border)"></div>Tarde (16:30–23)</div><div class="leg"><div class="leg-dot" style="background:#f4eafc;border:1px solid #c8a0e8"></div>Oihana (Hond. 14–16:30 + Comp. 16:30–23)</div><div class="leg"><div class="leg-dot" style="background:var(--OFF-bg);border:1px solid var(--OFF-border)"></div>Festivo</div></div>
     <div class="table-wrap"><table><thead><tr id="headerRow-comptoir"></tr></thead><tbody id="scheduleBody-comptoir"></tbody></table></div>
     <div class="stats" id="statsRow-comptoir"></div>
   </div>
@@ -229,17 +249,79 @@
 </div>
 
 <div id="store-boutique" style="display:none">
-  <div class="empty-state">
-    <h2>Boutique de la Plage</h2>
-    <p>Pendiente de configurar.<br>Cuando estés listo, cuéntame los empleados y su estructura de turnos.</p>
+  <div class="hdr">
+    <div><h1>Boutique de la Plage</h1><p>Horarios temporada · Mañana 10:00–16:30 · Tarde 16:30–23:00 · Desde 1 julio 2026</p></div>
+    <div class="hdr-btns no-print">
+      <button class="btn" onclick="toggleSettings('boutique')">⚙ Configurar</button>
+      <button class="btn btn-primary" onclick="exportPDF()">⬇ Exportar PDF</button>
+    </div>
   </div>
+  <div class="settings-panel" id="settingsPanel-boutique">
+    <h3>Nombres del equipo — Boutique</h3>
+    <div class="settings-grid" id="settingsGrid-boutique"></div>
+    <div style="margin-top:1rem;display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="saveSettings('boutique')">Guardar nombres</button>
+      <button class="btn btn-danger btn-sm" onclick="resetAdjs('boutique')">Reiniciar ajustes</button>
+    </div>
+  </div>
+  <div class="acc-panel"><div class="acc-header"><h2 id="accTitle-boutique">Horas acumuladas</h2><span id="accSubtitle-boutique"></span></div><div class="acc-grid" id="hoursGrid-boutique"></div></div>
+  <div class="view-tabs no-print">
+    <button class="vtab active" onclick="switchView('boutique','weekly',this)">Semana</button>
+    <button class="vtab" onclick="switchView('boutique','monthly',this)">Mes</button>
+    <button class="vtab" onclick="switchView('boutique','emp',this)">Por empleado</button>
+  </div>
+  <div id="weeklyView-boutique">
+    <div class="week-nav"><button class="btn no-print" onclick="changeWeek('boutique',-1)">← Anterior</button><div><div class="week-label" id="weekLabel-boutique"></div><span class="week-sub" id="weekNum-boutique"></span></div><button class="btn no-print" onclick="changeWeek('boutique',1)">Siguiente →</button></div>
+    <div class="info-bar" id="infoBar-boutique"><span id="infoText-boutique"></span></div>
+    <div class="legend">
+      <div class="leg"><div class="leg-dot" style="background:var(--M-bg);border:1px solid var(--M-border)"></div>Mañana (10–16:30)</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--T-bg);border:1px solid var(--T-border)"></div>Tarde (16:30–23)</div>
+      <div class="leg"><div class="leg-dot" style="background:#f0e8f8;border:1px solid #d4aaee"></div>Fermin (10–12 / 19–23)</div>
+      <div class="leg"><div class="leg-dot" style="background:#e8f4f0;border:1px solid #a0d4c4"></div>Manoli (12–19)</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--OFF-bg);border:1px solid var(--OFF-border)"></div>Festivo</div>
+    </div>
+    <div class="table-wrap"><table><thead><tr id="headerRow-boutique"></tr></thead><tbody id="scheduleBody-boutique"></tbody></table></div>
+    <div class="stats" id="statsRow-boutique"></div>
+  </div>
+  <div id="monthlyView-boutique" style="display:none"><div class="month-nav no-print"><button class="btn" onclick="changeMonth('boutique',-1)">← Anterior</button><div class="month-label" id="monthLabel-boutique"></div><button class="btn" onclick="changeMonth('boutique',1)">Siguiente →</button></div><div class="month-grid" id="monthGrid-boutique"></div></div>
+  <div id="empView-boutique" style="display:none"><div class="emp-select-bar no-print"><label>Empleado:</label><select id="empSelect-boutique" onchange="renderEmpView('boutique')"></select></div><div id="empProfile-boutique" class="emp-profile"></div><div class="emp-month-nav"><button class="btn no-print" onclick="changeEmpMonth('boutique',-1)">← Anterior</button><div class="month-label" id="empMonthLabel-boutique"></div><button class="btn no-print" onclick="changeEmpMonth('boutique',1)">Siguiente →</button></div><div class="emp-month-stats" id="empMonthStats-boutique"></div><div class="emp-month-grid" id="empMonthGrid-boutique"></div></div>
 </div>
 
 <div id="store-hondartza" style="display:none">
-  <div class="empty-state">
-    <h2>Hondartza</h2>
-    <p>Pendiente de configurar.<br>Horario de 10:00 a 19:00 — cuéntame la estructura de turnos cuando estés listo.</p>
+  <div class="hdr">
+    <div><h1>Hondartza</h1><p>Horarios temporada · Turno único 10:00–19:00 · Desde 1 julio 2026</p></div>
+    <div class="hdr-btns no-print">
+      <button class="btn" onclick="toggleSettings('hondartza')">⚙ Configurar</button>
+      <button class="btn btn-primary" onclick="exportPDF()">⬇ Exportar PDF</button>
+    </div>
   </div>
+  <div class="settings-panel" id="settingsPanel-hondartza">
+    <h3>Nombres del equipo — Hondartza</h3>
+    <div class="settings-grid" id="settingsGrid-hondartza"></div>
+    <div style="margin-top:1rem;display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="saveSettings('hondartza')">Guardar nombres</button>
+      <button class="btn btn-danger btn-sm" onclick="resetAdjs('hondartza')">Reiniciar ajustes</button>
+    </div>
+  </div>
+  <div class="acc-panel"><div class="acc-header"><h2 id="accTitle-hondartza">Horas acumuladas</h2><span id="accSubtitle-hondartza"></span></div><div class="acc-grid" id="hoursGrid-hondartza"></div></div>
+  <div class="view-tabs no-print">
+    <button class="vtab active" onclick="switchView('hondartza','weekly',this)">Semana</button>
+    <button class="vtab" onclick="switchView('hondartza','monthly',this)">Mes</button>
+    <button class="vtab" onclick="switchView('hondartza','emp',this)">Por empleado</button>
+  </div>
+  <div id="weeklyView-hondartza">
+    <div class="week-nav"><button class="btn no-print" onclick="changeWeek('hondartza',-1)">← Anterior</button><div><div class="week-label" id="weekLabel-hondartza"></div><span class="week-sub" id="weekNum-hondartza"></span></div><button class="btn no-print" onclick="changeWeek('hondartza',1)">Siguiente →</button></div>
+    <div class="info-bar" id="infoBar-hondartza"><span id="infoText-hondartza"></span></div>
+    <div class="legend">
+      <div class="leg"><div class="leg-dot" style="background:#fff4e0;border:1px solid #f0cc80"></div>Nora (10–14 / 16:30–19)</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--T-bg);border:1px solid var(--T-border)"></div>Descanso 14–16:30: Oihana (Comptoir)</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--OFF-bg);border:1px solid var(--OFF-border)"></div>Festivo</div>
+    </div>
+    <div class="table-wrap"><table><thead><tr id="headerRow-hondartza"></tr></thead><tbody id="scheduleBody-hondartza"></tbody></table></div>
+    <div class="stats" id="statsRow-hondartza"></div>
+  </div>
+  <div id="monthlyView-hondartza" style="display:none"><div class="month-nav no-print"><button class="btn" onclick="changeMonth('hondartza',-1)">← Anterior</button><div class="month-label" id="monthLabel-hondartza"></div><button class="btn" onclick="changeMonth('hondartza',1)">Siguiente →</button></div><div class="month-grid" id="monthGrid-hondartza"></div></div>
+  <div id="empView-hondartza" style="display:none"><div class="emp-select-bar no-print"><label>Empleado:</label><select id="empSelect-hondartza" onchange="renderEmpView('hondartza')"></select></div><div id="empProfile-hondartza" class="emp-profile"></div><div class="emp-month-nav"><button class="btn no-print" onclick="changeEmpMonth('hondartza',-1)">← Anterior</button><div class="month-label" id="empMonthLabel-hondartza"></div><button class="btn no-print" onclick="changeEmpMonth('hondartza',1)">Siguiente →</button></div><div class="emp-month-stats" id="empMonthStats-hondartza"></div><div class="emp-month-grid" id="empMonthGrid-hondartza"></div></div>
 </div>
 
 <!-- MODAL AJUSTE -->
@@ -273,16 +355,32 @@ const STORES = {
     shiftH: 6.5,
     emps: [
       {id:0,name:'Iciar',    role:'Fija mañanas',        fixedShift:'M',dayOff:4},
-      {id:1,name:'Oihana',   role:'Fija tardes',         fixedShift:'T',dayOff:5},
-      {id:2,name:'Leire B.', role:'Rotación ×2 (par A)', pairPhase:0,  dayOff:0},
-      {id:3,name:'Iker G.',  role:'Rotación ×2 (par A)', pairPhase:1,  dayOff:1},
+      {id:1,name:'Oihana',   role:'Hondartza 14–16:30 + Comptoir 16:30–23', fixedShift:'T',dayOff:5,splitHondartza:true},
+      {id:2,name:'Uxue',     role:'Rotación semanal',    rotId:0,      dayOff:2},
+      {id:3,name:'Iker G.',  role:'Rotación semanal',    rotId:1,      dayOff:1},
       {id:4,name:'Marta F.', role:'Rotación semanal',    rotId:0,      dayOff:2},
       {id:5,name:'Julien D.',role:'Rotación semanal',    rotId:1,      dayOff:3},
       {id:6,name:'Sofía P.', role:'Comodín cobertura',   cover:true,   dayOff:6},
     ]
   },
-  boutique: { label:'Boutique de la Plage', startDate:START_DATE, shiftH:6.5, emps:[] },
-  hondartza: { label:'Hondartza', startDate:START_DATE, shiftH:9, emps:[] },
+  boutique: {
+    label:'Boutique de la Plage', startDate:START_DATE, shiftH:6.5,
+    emps:[
+      {id:0,name:'Fermin',     role:'Horario especial',    special:'fermin',  dayOff:-1},
+      {id:1,name:'Manoli',     role:'Horario especial',    special:'manoli',  dayOff:0},
+      {id:2,name:'Mari Carmen',role:'Rotación (par Uxue)', pairUxue:true,     dayOff:2},
+      {id:3,name:'Empleado 4', role:'Rotación semanal',    rotId:0,           dayOff:1},
+      {id:4,name:'Empleado 5', role:'Rotación semanal',    rotId:1,           dayOff:3},
+      {id:5,name:'Empleado 6', role:'Rotación semanal',    rotId:2,           dayOff:4},
+      {id:6,name:'Comodín B.', role:'Comodín cobertura',   coverB:true,       dayOff:5},
+    ]
+  },
+  hondartza: {
+    label:'Hondartza', startDate:START_DATE, shiftH:6.5,
+    emps:[
+      {id:0,name:'Nora', role:'10–14 y 16:30–19 (descanso 14–16:30 Oihana)', fixedShift:'U', dayOff:6},
+    ]
+  },
 };
 
 // Cargar nombres guardados
@@ -318,16 +416,87 @@ function baseShift(emp,wo){
   if(emp.rotId!==undefined)return(((wo+emp.rotId)%2+2)%2===0)?'M':'T';
   return'M';
 }
-function getShift(emps,emp,date){
+// Add Uxue to Comptoir emps if not present yet (will be set via settings)
+function ensureUxue(){
+  const c=STORES.comptoir.emps;
+  if(!c.find(e=>e.name==='Uxue')){
+    // Find the rotacion normal emp to link - use rotId:0 employee as Uxue placeholder
+    const target=c.find(e=>e.rotId===0&&!e.fixedShift&&!e.cover);
+    if(target) target.name='Uxue';
+  }
+}
+function getShift(emps,emp,date,store){
   const d=new Date(date);d.setHours(0,0,0,0);
   const dow=d.getDay(),di=dow===0?6:dow-1;
-  if(di===emp.dayOff)return'OFF';
+
+  // Horarios especiales Boutique
+  if(emp.special==='fermin') return 'F'; // 10-12 y 19-23 todos los dias, sin festivo
+  if(emp.special==='manoli'){
+    if(di===emp.dayOff) return 'OFF';
+    return 'MN'; // 12-19
+  }
+  // Turno unico Hondartza
+  if(emp.fixedShift==='U'){
+    if(di===emp.dayOff) return 'OFF';
+    return 'U';
+  }
+
+  if(di===emp.dayOff) return 'OFF';
   const wo2=wOff(d);
-  if(emp.cover){const r=emps.find(e=>!e.cover&&e.dayOff===di);return r?(baseShift(r,wo2)==='M'?'M':'T'):'M';}
+
+  // Oihana split: Hondartza 14-16:30 + Comptoir 16:30-23
+  if(emp.splitHondartza) return 'OH';
+
+  // Mari Carmen: misma rotacion que Uxue en Comptoir
+  if(emp.pairUxue){
+    const uxue=STORES.comptoir.emps.find(e=>e.name==='Uxue');
+    if(uxue){
+      // Uxue es rotacion normal en comptoir
+      const uxueShift=baseShiftRot(uxue,wo2);
+      return uxueShift;
+    }
+    // fallback rotacion normal
+    return (((wo2)%2+2)%2===0)?'M':'T';
+  }
+
+  // Comodin Boutique: cubre festivo de cada trabajador de boutique + Nora (domingo)
+  if(emp.coverB){
+    // quien descansa hoy en boutique (excluyendo fermin y comodin)
+    const resting=emps.find(e=>!e.coverB&&e.special!=='fermin'&&e.dayOff===di);
+    if(resting){
+      if(resting.special==='manoli') return 'MN';
+      if(resting.pairUxue){
+        const uxue=STORES.comptoir.emps.find(e=>e.name==='Uxue');
+        if(uxue) return baseShiftRot(uxue,wo2);
+        return (((wo2)%2+2)%2===0)?'M':'T';
+      }
+      return baseShiftRot(resting,wo2);
+    }
+    // Domingo: cubre a Nora en Hondartza (10-14 y 16:30-19)
+    if(di===6) return 'CN';
+    return 'M';
+  }
+
   return baseShift(emp,wo2);
 }
-function works(t){return t==='M'||t==='T';}
-function pilLabel(t){return{M:'Mañana',T:'Tarde',OFF:'Festivo'}[t]||'';}
+function baseShiftRot(emp,wo){
+  if(emp.fixedShift)return emp.fixedShift;
+  if(emp.pairPhase!==undefined){const c=((wo%4)+4)%4;return(emp.pairPhase===0?c<2:c>=2)?'M':'T';}
+  if(emp.rotId!==undefined)return(((wo+emp.rotId)%2+2)%2===0)?'M':'T';
+  return'M';
+}
+function works(t){return t==='M'||t==='T'||t==='MN'||t==='F'||t==='U'||t==='CN'||t==='OH';}
+function shiftHours(t,store){
+  if(t==='F') return 6; // 10-12 (2h) + 19-23 (4h)
+  if(t==='MN') return 7; // 12-19
+  if(t==='U') return 6.5;  // 10-14 (4h) + 16:30-19 (2.5h), descanso 14-16:30 cubierto por Oihana
+  if(t==='CN') return 6.5; // 10-14 (4h) + 16:30-19 (2.5h)
+  if(t==='OH') return 9;  // Oihana: 14-16:30 Hondartza + 16:30-23 Comptoir
+  if(t==='M'||t==='T') return store?STORES[store].shiftH:6.5;
+  return 0;
+}
+function pilLabel(t){return{M:'Mañana',T:'Tarde',OFF:'Festivo',F:'10–12 / 19–23',MN:'12–19',U:'10–14 / 16:30–19',CN:'Cob. Nora',OH:'Hond.14–16:30 + Comp.16:30–23'}[t]||'';}
+function pillClass(t){return{M:'pill-M',T:'pill-T',OFF:'pill-OFF',F:'pill-F',MN:'pill-MN',U:'pill-U',CN:'pill-CN',OH:'pill-OH'}[t]||'pill-M';}
 function initials(name){return name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();}
 function fmt(d){return d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'});}
 function getMondayOfWeek(off){const d=new Date(REF_MONDAY);d.setDate(REF_MONDAY.getDate()+off*7);return d;}
@@ -337,7 +506,7 @@ function getWeekNum(date){const d=new Date(Date.UTC(date.getFullYear(),date.getM
 function baseHours(store,empId,before){
   const sh=STORES[store];
   let h=0;const cur=new Date(sh.startDate);const end=new Date(before);end.setHours(0,0,0,0);
-  while(cur<end){if(works(getShift(sh.emps,sh.emps[empId],cur)))h+=sh.shiftH;cur.setDate(cur.getDate()+1);}
+  while(cur<end){const _bt=getShift(sh.emps,sh.emps[empId],cur,store);if(works(_bt))h+=shiftHours(_bt,store);cur.setDate(cur.getDate()+1);}
   return h;
 }
 function adjHoursUntil(store,empId,before){
@@ -421,7 +590,7 @@ document.getElementById('adjModal').addEventListener('click',function(e){if(e.ta
 // ── SEMANA ─────────────────────────────────────────────────────────────────
 function calcWeekH(store,monday){
   const sh=STORES[store];
-  return sh.emps.map(emp=>{let h=0;for(let d=0;d<7;d++){const dt=new Date(monday);dt.setDate(monday.getDate()+d);if(dt<sh.startDate)continue;if(works(getShift(sh.emps,emp,dt)))h+=sh.shiftH;}return h;});
+  return sh.emps.map(emp=>{let h=0;for(let d=0;d<7;d++){const dt=new Date(monday);dt.setDate(monday.getDate()+d);if(dt<sh.startDate)continue;const _t=getShift(sh.emps,emp,dt,store);if(works(_t))h+=shiftHours(_t,store);}return h;});
 }
 
 function renderWeekly(store){
@@ -461,7 +630,7 @@ function renderWeekly(store){
       const type=dim?null:getShift(sh.emps,emp,dt);
       if(!dim){if(type==='M')tM++;else if(type==='T')tT++;else if(type==='OFF')tOff++;}
       cells+=`<td class="${isToday?'today-cell':''}" style="${dim?'opacity:.2':''}">
-        ${!dim&&type?`<span class="pill pill-${type}">${pilLabel(type)}</span>`:'–'}
+        ${!dim&&type?`<span class="pill ${pillClass(type)}">${pilLabel(type)}</span>`:'–'}
       </td>`;
     }
     const wa=ADJS[store].filter(a=>{const ad=new Date(a.date+'T12:00');ad.setHours(0,0,0,0);return a.empId===i&&ad>=monday&&ad<=sunday;}).reduce((s,a)=>s+a.hours,0);
@@ -469,11 +638,12 @@ function renderWeekly(store){
     body.appendChild(tr);
   });
 
+  const totalWH=weekH.reduce((a,b)=>a+b,0);
   document.getElementById('statsRow-'+store).innerHTML=`
     <div class="stat"><div class="stat-label">Turnos mañana</div><div class="stat-value" style="color:var(--M-text)">${tM}</div><div class="stat-sub">esta semana</div></div>
     <div class="stat"><div class="stat-label">Turnos tarde</div><div class="stat-value" style="color:var(--T-text)">${tT}</div><div class="stat-sub">esta semana</div></div>
     <div class="stat"><div class="stat-label">Festivos</div><div class="stat-value">${tOff}</div><div class="stat-sub">esta semana</div></div>
-    <div class="stat"><div class="stat-label">Horas equipo</div><div class="stat-value">${((tM+tT)*sh.shiftH).toFixed(0)}h</div><div class="stat-sub">esta semana</div></div>`;
+    <div class="stat"><div class="stat-label">Horas equipo</div><div class="stat-value">${totalWH.toFixed(0)}h</div><div class="stat-sub">esta semana</div></div>`;
 }
 
 // ── MES ────────────────────────────────────────────────────────────────────
@@ -495,7 +665,7 @@ function renderMonthly(store){
     let pills='';
     sh.emps.forEach(emp=>{
       const t=getShift(sh.emps,emp,date);
-      pills+=`<span class="month-pill mp-${t}" title="${emp.name}: ${pilLabel(t)}">${emp.name.split(' ')[0]} ${t==='OFF'?'🏖':t}</span>`;
+      pills+=`<span class="month-pill mp-${t}" title="${emp.name}: ${pilLabel(t)}">${emp.name.split(' ')[0]} ${t==='OFF'?'🏖':pilLabel(t).split('–')[0]||t}</span>`;
     });
     grid.innerHTML+=`<div class="${cls}"><div class="month-date ${isToday?'is-today':''}">${day}</div>${pills}</div>`;
   }
@@ -535,7 +705,7 @@ function renderEmpView(store){
   const first=new Date(yr,mo,1),last=new Date(yr,mo+1,0);
   let sdow=first.getDay()-1;if(sdow<0)sdow=6;
   let mM=0,mT=0,mOff=0,mH=0;
-  for(let d=1;d<=last.getDate();d++){const dt=new Date(yr,mo,d);if(dt<sh.startDate)continue;const t=getShift(sh.emps,emp,dt);if(t==='M'){mM++;mH+=sh.shiftH;}else if(t==='T'){mT++;mH+=sh.shiftH;}else if(t==='OFF')mOff++;}
+  for(let d=1;d<=last.getDate();d++){const dt=new Date(yr,mo,d);if(dt<sh.startDate)continue;const t=getShift(sh.emps,emp,dt);if(t==='OFF'){mOff++;}else if(works(t)){if(t==='M')mM++;else if(t==='T')mT++;mH+=shiftHours(t,store);}}
   const adjMonth=ADJS[store].filter(a=>{const d=new Date(a.date+'T12:00');return a.empId===st.selectedEmp&&d.getFullYear()===yr&&d.getMonth()===mo;}).reduce((s,a)=>s+a.hours,0);
   document.getElementById('empMonthStats-'+store).innerHTML=`
     <div class="stat"><div class="stat-label">Mañanas</div><div class="stat-value" style="color:var(--M-text)">${mM}</div><div class="stat-sub">este mes</div></div>
@@ -551,7 +721,8 @@ function renderEmpView(store){
     const date=new Date(yr,mo,day);date.setHours(0,0,0,0);
     const isToday=date.getTime()===today.getTime(),bs=date<sh.startDate;
     const t=getShift(sh.emps,emp,date);
-    const sl=t==='OFF'?'Libre':t==='M'?'Mañana':'Tarde';
+    const slMap={M:'Mañana',T:'Tarde',OFF:'Libre',F:'10-12/19-23',MN:'12-19',U:'10-14/16:30-19',CN:'Cob.Nora',OH:'Hond+Comp'};
+    const sl=slMap[t]||t;
     grid.innerHTML+=`<div class="emp-day d-${t}${isToday?' d-today':''}${bs?' before-start':''}"><div class="emp-day-num ${isToday?'is-today':''}">${day}</div><div class="emp-day-shift">${sl}</div></div>`;
   }
   const rem=(sdow+last.getDate())%7;
@@ -586,7 +757,7 @@ function switchStore(store,el){
   document.querySelectorAll('.store-tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
   ['comptoir','boutique','hondartza'].forEach(s=>document.getElementById('store-'+s).style.display=s===store?'block':'none');
-  if(STORES[store].emps.length>0)renderStore(store);
+  renderStore(store);
 }
 
 function switchView(store,view,el){
@@ -610,7 +781,7 @@ function renderStore(store){
   const st=STATE[store];
   if(st.currentView==='weekly')renderWeekly(store);
   else if(st.currentView==='monthly')renderMonthly(store);
-  else{buildEmpSelect(store);renderEmpView(store);}
+  else if(STORES[store].emps.length){buildEmpSelect(store);renderEmpView(store);}
 }
 
 function exportPDF(){
@@ -624,7 +795,9 @@ STATE.comptoir.weekOffset=initOffset;
 STATE.boutique.weekOffset=initOffset;
 STATE.hondartza.weekOffset=initOffset;
 
+ensureUxue();
 renderWeekly('comptoir');
+// Populate boutique and hondartza views when switched
 </script>
 </body>
 </html>
