@@ -213,6 +213,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-mono);min-hei
           <div class="vers-field"><div class="lbl">💳 Chèques</div><input type="number" inputmode="decimal" placeholder="0.00" id="f-vch"></div>
           <div class="vers-field"><div class="lbl">💵 Espèces</div><input type="number" inputmode="decimal" placeholder="0.00" id="f-vesp"></div>
         </div>
+        <button onclick="saveVersement()" style="width:100%;margin-top:10px;padding:11px;border-radius:10px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:var(--font-mono);font-size:12px;cursor:pointer">
+          ↗ Guardar solo versement
+        </button>
       </div>
 
       <div class="notes-field">
@@ -412,6 +415,34 @@ function resetForm(keepStore=false,advanceDay=false){
 }
 
 function cancelEdit(){resetForm(false, false)}
+
+function saveVersement(){
+  const vch=v('f-vch'),vesp=v('f-vesp');
+  if(vch===0&&vesp===0){alert('Introduce al menos un versement.');return}
+  const dateVal=document.getElementById('f-date').value||new Date().toISOString().slice(0,10);
+  const d=new Date(dateVal+'T12:00:00');
+  // Try to merge into existing entry for same day+store
+  const existing=entries.findIndex(e=>e.date===dateVal&&e.magasin===currentStore);
+  if(existing>=0){
+    entries[existing].versement_cheq=(entries[existing].versement_cheq||0)+vch;
+    entries[existing].versement_esp=(entries[existing].versement_esp||0)+vesp;
+    showToast('✓ Versement añadido');
+  }else{
+    // Create new entry with only versement
+    entries.push({
+      id:Date.now().toString(),
+      date:dateVal,jour:d.getDate(),mois:dateVal.slice(0,7),
+      magasin:currentStore,cb:0,liquide:0,cheque:0,
+      recettes:0,yokii:0,noche:0,versement_cheq:vch,versement_esp:vesp,
+      note:'Versement',total:0,ts:new Date().toISOString()
+    });
+    showToast('✓ Versement guardado');
+  }
+  localStorage.setItem('caixa_entries',JSON.stringify(entries));
+  document.getElementById('f-vch').value='';
+  document.getElementById('f-vesp').value='';
+  renderHistory();updateExportStats();
+}
 
 function editEntry(id){
   const e=entries.find(x=>x.id===id);if(!e)return;
