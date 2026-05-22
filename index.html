@@ -213,9 +213,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--font-mono);min-hei
           <div class="vers-field"><div class="lbl">💳 Chèques</div><input type="number" inputmode="decimal" placeholder="0.00" id="f-vch"></div>
           <div class="vers-field"><div class="lbl">💵 Espèces</div><input type="number" inputmode="decimal" placeholder="0.00" id="f-vesp"></div>
         </div>
-        <button onclick="saveVersement()" style="width:100%;margin-top:10px;padding:11px;border-radius:10px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:var(--font-mono);font-size:12px;cursor:pointer">
-          ↗ Guardar solo versement
-        </button>
       </div>
 
       <div class="notes-field">
@@ -359,7 +356,7 @@ function submitEntry(){
   const note=document.getElementById('f-note').value.trim();
   const dateVal=document.getElementById('f-date').value||new Date().toISOString().slice(0,10);
   const recettes=cb+liq+cheq;
-  if(recettes===0&&yokii===0&&noche===0&&vch===0&&vesp===0){alert('Veuillez saisir au moins une valeur.');return}
+  if(recettes===0&&yokii===0&&noche===0){alert('Veuillez saisir au moins une valeur.');return}
   const d=new Date(dateVal+'T12:00:00');
   const entry={
     id:editingId||Date.now().toString(),
@@ -373,76 +370,27 @@ function submitEntry(){
     if(idx>=0)entries[idx]=entry;
     showToast('✓ Modifié');
   }else{
-    // Check if entry exists for same day+store — merge versements
-    const existing=entries.findIndex(e=>e.date===dateVal&&e.magasin===currentStore);
-    if(existing>=0&&recettes===0&&yokii===0&&noche===0){
-      // Only versement — add to existing entry
-      entries[existing].versement_cheq=(entries[existing].versement_cheq||0)+vch;
-      entries[existing].versement_esp=(entries[existing].versement_esp||0)+vesp;
-      showToast('✓ Versement añadido al día');
-    }else{
-      entries.push(entry);
-      showToast('✓ Enregistré');
-    }
+    entries.push(entry);
+    showToast('✓ Enregistré');
   }
   localStorage.setItem('caixa_entries',JSON.stringify(entries));
-  if(editingId){
-    resetForm(false, false);
-  } else {
-    resetForm(true, true); // keep store, advance day
-  }
-  renderHistory();updateExportStats();
+  resetForm();renderHistory();updateExportStats();
 }
 
-function resetForm(keepStore=false,advanceDay=false){
+function resetForm(){
   editingId=null;
   ['f-cb','f-liq','f-cheq','f-yokii','f-noche','f-vch','f-vesp'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('f-note').value='';
-  if(advanceDay){
-    const cd=document.getElementById('f-date').value;
-    if(cd){const d=new Date(cd+'T12:00:00');d.setDate(d.getDate()+1);document.getElementById('f-date').value=d.toISOString().slice(0,10);}
-  }else{
-    document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
-  }
-  if(!keepStore){
-    currentStore='BOUTIQUE DE LA PLAGE';
-    document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===0));
-  }
+  document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
+  currentStore='BOUTIQUE DE LA PLAGE';
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===0));
   updatePreview();
   document.getElementById('edit-banner').style.display='none';
   document.getElementById('btn-cancel').style.display='none';
   document.getElementById('btn-submit').textContent='ENREGISTRER ↗';
 }
 
-function cancelEdit(){resetForm(false, false)}
-
-function saveVersement(){
-  const vch=v('f-vch'),vesp=v('f-vesp');
-  if(vch===0&&vesp===0){alert('Introduce al menos un versement.');return}
-  const dateVal=document.getElementById('f-date').value||new Date().toISOString().slice(0,10);
-  const d=new Date(dateVal+'T12:00:00');
-  // Try to merge into existing entry for same day+store
-  const existing=entries.findIndex(e=>e.date===dateVal&&e.magasin===currentStore);
-  if(existing>=0){
-    entries[existing].versement_cheq=(entries[existing].versement_cheq||0)+vch;
-    entries[existing].versement_esp=(entries[existing].versement_esp||0)+vesp;
-    showToast('✓ Versement añadido');
-  }else{
-    // Create new entry with only versement
-    entries.push({
-      id:Date.now().toString(),
-      date:dateVal,jour:d.getDate(),mois:dateVal.slice(0,7),
-      magasin:currentStore,cb:0,liquide:0,cheque:0,
-      recettes:0,yokii:0,noche:0,versement_cheq:vch,versement_esp:vesp,
-      note:'Versement',total:0,ts:new Date().toISOString()
-    });
-    showToast('✓ Versement guardado');
-  }
-  localStorage.setItem('caixa_entries',JSON.stringify(entries));
-  document.getElementById('f-vch').value='';
-  document.getElementById('f-vesp').value='';
-  renderHistory();updateExportStats();
-}
+function cancelEdit(){resetForm()}
 
 function editEntry(id){
   const e=entries.find(x=>x.id===id);if(!e)return;
