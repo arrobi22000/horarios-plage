@@ -95,6 +95,7 @@
   .pill-U{background:#fff4e0;color:#7a4a00;border-color:#f0cc80;}
   .pill-CN{background:#fce8f0;color:#7a0a3a;border-color:#f0a0c0;}
   .pill-OH{background:#f4eafc;color:#5a0a7a;border-color:#c8a0e8;}
+  .pill-M930{background:#c0d8f4;color:#0a2d5e;border-color:#6aaae0;font-weight:600;border-width:2px;}
   .pill-M2{background:#deeaf8;color:#1a3d6e;border-color:#a8c8ee;border-style:dashed;}
   .pill-T2{background:#fae5d8;color:#7a2e0e;border-color:#f0b89a;border-style:dashed;}
   .pill-F2{background:#deeaf8;color:#1a3d6e;border-color:#a8c8ee;border-style:dashed;}
@@ -124,6 +125,7 @@
   .mp-U{background:#fff4e0;color:#7a4a00;}
   .mp-CN{background:#fce8f0;color:#7a0a3a;}
   .mp-OH{background:#f4eafc;color:#5a0a7a;}
+  .mp-M930{background:#c0d8f4;color:#0a2d5e;}
   .mp-M2{background:#deeaf8;color:#1a3d6e;}
   .mp-T2{background:#fae5d8;color:#7a2e0e;}
   .mp-F2{background:#deeaf8;color:#1a3d6e;}
@@ -159,6 +161,9 @@
   .emp-day.d-CN .emp-day-num,.emp-day.d-CN .emp-day-shift{color:#7a0a3a;}
   .emp-day.d-OH{background:#f4eafc;border-color:#c8a0e8;}
   .emp-day.d-OH .emp-day-num,.emp-day.d-OH .emp-day-shift{color:#5a0a7a;}
+  .emp-day.d-M930{background:#c0d8f4;border-color:#6aaae0;position:relative;}
+  .emp-day.d-M930::before{content:'★';position:absolute;top:2px;right:3px;font-size:8px;color:#0a2d5e;}
+  .emp-day.d-M930 .emp-day-num,.emp-day.d-M930 .emp-day-shift{color:#0a2d5e;}
   .emp-day.d-M2{background:#deeaf8;border-color:#a8c8ee;border-style:dashed;}
   .emp-day.d-M2 .emp-day-num,.emp-day.d-M2 .emp-day-shift{color:#1a3d6e;}
   .emp-day.d-T2{background:#fae5d8;border-color:#f0b89a;border-style:dashed;}
@@ -290,6 +295,7 @@
       <div class="leg"><div class="leg-dot" style="background:var(--T-bg);border:1px solid var(--T-border)"></div>Tarde (16:30–23)</div>
       <div class="leg"><div class="leg-dot" style="background:#f0e8f8;border:1px solid #d4aaee"></div>Fermin (10–12 / 19–23)</div>
       <div class="leg"><div class="leg-dot" style="background:#e8f4f0;border:1px solid #a0d4c4"></div>Manoli (12–19)</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--M-bg);border:2px dashed var(--M-border)"></div>Apertura 1–3 jul (10–15 / 15–20)</div>
       <div class="leg"><div class="leg-dot" style="background:var(--OFF-bg);border:1px solid var(--OFF-border)"></div>Festivo</div>
     </div>
     <div class="table-wrap"><table><thead><tr id="headerRow-boutique"></tr></thead><tbody id="scheduleBody-boutique"></tbody></table></div>
@@ -349,6 +355,28 @@
     <div class="modal-btns"><button class="btn" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="saveAdj()">Guardar ajuste</button></div>
   </div>
 </div>
+<!-- PDF EXPORT MODAL -->
+<div class="modal-bg" id="pdfModal">
+  <div class="modal" style="width:420px;">
+    <h3>Exportar PDF</h3>
+    <p>¿Qué quieres exportar?</p>
+    <div class="modal-row" style="margin-bottom:.5rem;">
+      <label>Tipo de exportación</label>
+      <select id="pdfType" onchange="onPdfTypeChange()">
+        <option value="view">Vista actual</option>
+        <option value="emp">Ficha de empleado</option>
+      </select>
+    </div>
+    <div id="pdfEmpRow" class="modal-row" style="display:none;">
+      <label>Empleado</label>
+      <select id="pdfEmpSelect"></select>
+    </div>
+    <div class="modal-btns">
+      <button class="btn" onclick="closePdfModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="doPdfExport()">🖨 Exportar</button>
+    </div>
+  </div>
+</div>
 
 <script>
 const REF_MONDAY = new Date(2026,5,29); REF_MONDAY.setHours(0,0,0,0);
@@ -371,8 +399,8 @@ const STORES = {
       {id:2,name:'Uxue',    role:'Rotación semanal',                rotId:0,       dayOff:2},
       {id:3,name:'Lucie',   role:'Espejo de Uxue',                  rotId:1,       dayOff:3},
       {id:4,name:'Mayder',  role:'Rotación semanal',                mayder:true,   dayOff:0},
-      {id:5,name:'Maura',   role:'Espejo de Mayder',                maura:true,    dayOff:1},
-      {id:6,name:'Comodín', role:'Correturnos',                     cover:true,    dayOff:6},
+      {id:5,name:'Maura',   role:'Espejo de Mayder',                maura:true,    dayOff:6},
+      {id:6,name:'Irati', role:'Correturnos',                     cover:true,    dayOff:1},
     ]
   },
   boutique: {
@@ -443,38 +471,111 @@ function isOpeningDay(date){
   const jul1=new Date(2026,6,1),jul2=new Date(2026,6,2),jul3=new Date(2026,6,3);
   return d.getTime()===jul1.getTime()||d.getTime()===jul2.getTime()||d.getTime()===jul3.getTime();
 }
-function getOpeningShift(emp,date,emps){
+function getOpeningShift(emp,date,emps,store){
   // Primeros 3 días: cierre 20h
-  // Iciar: 10-16:30 Comptoir → I3
-  // Oihana: 14-16:30 Hond + 16:30-20 Comp → O3
-  // Resto: M2=10-15, T2=15-20
+  // Iciar: 10-16:30 → I3 (pero si alguien le acompaña a las 9:30 → M930_3)
+  // Oihana: Hond 14-16:30 + Comp 16:30-20 → O3
+  // Resto mañana: M2=10-15 (o M930_3 si abre con Iciar), tarde: T2=15-20
   const d=new Date(date);d.setHours(0,0,0,0);
   const dow=d.getDay(),di=dow===0?6:dow-1;
+  const wo2=wOff(d);
   if(di===emp.dayOff) return 'OFF';
   if(emp.fixedShift==='M') return 'I3';    // Iciar: 10-16:30
-  if(emp.splitHondartza)   return 'O3';    // Oihana: Hond+Comp hasta 20h
+  if(emp.splitHondartza)   return 'O3';    // Oihana
   if(emp.special==='fermin') return 'F2';
   if(emp.special==='manoli') return 'T2';
   if(emp.fixedShift==='U') return 'M2';    // Nora 10-15
+
+  // Comodin: cubre quien descansa, si era mañana → M2 (o M930_3 si es Irati cubriendo Iciar)
   if(emp.cover||emp.coverB){
     const resting=emps.find(e=>!e.cover&&!e.coverB&&e.special!=='fermin'&&e.dayOff===di);
-    if(resting){const bs=baseShift(resting,wOff(d));return bs==='M'?'M2':'T2';}
+    if(resting){
+      if(resting.fixedShift==='M') return 'I3'; // cubre a Iciar → mismo horario
+      const bs=getEmpShiftForDay(resting,d,wo2);
+      return bs==='M'?'M2':'T2';
+    }
     return 'M2';
   }
-  if(emp.pairUxue){
-    const uxue=STORES.comptoir.emps.find(e=>e.name==='Uxue');
-    if(uxue) return baseShiftRot(uxue,wOff(d))==='M'?'M2':'T2';
-    return 'M2';
+
+  // Para el resto: calcular turno y ver si es el opener
+  const myShift=getEmpShiftForDay(emp,d,wo2);
+  if(myShift==='T') return 'T2';
+
+  // Es mañana → comprobar si acompaña a Iciar a las 9:30
+  if(store==='comptoir'){
+    const opener=getOpenerWithIciar(emps,d,wo2);
+    if(opener&&opener.id===emp.id) return 'M930';
   }
-  const t=baseShift(emp,wOff(d));
-  return t==='M'?'M2':'T2';
+  return 'M2';
 }
+
+// ── APERTURA 9:30 ICIAR ────────────────────────────────────────────────────
+// Devuelve true si este empleado acompaña a Iciar a las 9:30 ese día
+function getMayderShift(wOff2){
+  const REF=new Date(2026,6,5);REF.setHours(0,0,0,0);
+  const weekNum=Math.max(0,Math.min(Math.floor((new Date()-REF)/(7*86400000)),8));
+  // Use wOff2 relative to REF
+  const mayder_shifts=[1,0,0,1,1,0,0,1,1];
+  const idx=Math.max(0,Math.min(wOff2,mayder_shifts.length-1));
+  return mayder_shifts[idx]===1?'T':'M';
+}
+function getEmpShiftForDay(e, d, wOff2){
+  if(e.fixedShift) return e.fixedShift;
+  if(e.splitHondartza) return 'T';
+  if(e.mayder){
+    const REF=new Date(2026,6,5);REF.setHours(0,0,0,0);
+    const dd=new Date(d);dd.setHours(0,0,0,0);
+    const weekNum=Math.max(0,Math.floor((dd-REF)/(7*86400000)));
+    const mayder_shifts=[1,0,0,1,1,0,0,1,1];
+    return mayder_shifts[Math.min(weekNum,mayder_shifts.length-1)]===1?'T':'M';
+  }
+  if(e.maura){
+    const REF=new Date(2026,6,5);REF.setHours(0,0,0,0);
+    const dd=new Date(d);dd.setHours(0,0,0,0);
+    const weekNum=Math.max(0,Math.floor((dd-REF)/(7*86400000)));
+    const mayder_shifts=[1,0,0,1,1,0,0,1,1];
+    return mayder_shifts[Math.min(weekNum,mayder_shifts.length-1)]===0?'T':'M';
+  }
+  if(e.pairUxue){
+    const uxue=STORES.comptoir.emps.find(x=>x.name==='Uxue');
+    if(uxue) return baseShiftRot(uxue,wOff2)==='M'?'T':'M'; // espejo
+    return 'M';
+  }
+  if(e.pairUxueMirror){
+    const uxue=STORES.comptoir.emps.find(x=>x.name==='Uxue');
+    if(uxue) return baseShiftRot(uxue,wOff2)==='M'?'T':'M';
+    return 'T';
+  }
+  return baseShiftRot(e, wOff2);
+}
+function getOpenerWithIciar(emps, date, wOff2) {
+  const d = new Date(date); d.setHours(0,0,0,0);
+  const dow = d.getDay(), di = dow===0?6:dow-1;
+
+  // Personas que hacen mañanas hoy (excluye Iciar, Oihana, cover)
+  const morningWorkers = emps.filter(e => {
+    if(e.fixedShift==='M') return false; // Iciar
+    if(e.fixedShift==='T') return false; // Oihana
+    if(e.cover) return false;
+    if(e.dayOff === di) return false; // festivo hoy
+    return getEmpShiftForDay(e, d, wOff2) === 'M';
+  });
+
+  if(!morningWorkers.length) return null;
+
+  // Rotar día a día desde inicio de temporada
+  const START = new Date(2026,6,1); START.setHours(0,0,0,0);
+  const dayNum = Math.floor((d - START) / 86400000);
+  const idx = dayNum % morningWorkers.length;
+  return morningWorkers[idx];
+}
+
 function getShift(emps,emp,date,store){
   const d=new Date(date);d.setHours(0,0,0,0);
   const dow=d.getDay(),di=dow===0?6:dow-1;
 
   // Primeros 3 días de temporada: cierre a las 20h
-  if(isOpeningDay(date)) return getOpeningShift(emp,date,emps);
+  if(isOpeningDay(date)) return getOpeningShift(emp,date,emps,store);
 
   // Horarios especiales Boutique
   if(emp.special==='fermin') return 'F'; // 10-12 y 19-23 todos los dias, sin festivo
@@ -491,21 +592,36 @@ function getShift(emps,emp,date,store){
   if(di===emp.dayOff) return 'OFF';
   const wo2=wOff(d);
 
+  // Sábado especial: Oihana festivo → Iciar cubre tardes, Comodín abre mañanas
+  const isSat = di === 5;
+  if(isSat && emp.fixedShift==='M') return 'OH'; // Iciar sábado: Hond 14-16:30 + Comp 16:30-23
+  if(isSat && emp.cover && !emp.coverB) return 'M930'; // Comodín abre el sábado
+
+  // Iciar siempre mañanas 9:30 (excepto sábado ya tratado)
+  if(emp.fixedShift==='M') return 'M930';
+
   // Oihana split: Hondartza 14-16:30 + Comptoir 16:30-23
   if(emp.splitHondartza) return 'OH';
 
+  // Comodín Comptoir: sábado ya tratado arriba; resto de días ver lógica cover abajo
+  
+
   // Mayder schedule from image (week starting Sunday)
   if(emp.mayder||emp.maura){
-    const REF=new Date(2026,6,5); // domingo 5 jul = inicio primera semana
-    REF.setHours(0,0,0,0);
+    const REF=new Date(2026,6,5);REF.setHours(0,0,0,0);
     const dd=new Date(d);dd.setHours(0,0,0,0);
     const diffDays=Math.floor((dd-REF)/(86400000));
     const weekNum=Math.floor(diffDays/7);
-    // Mayder: 0=T,1=M,2=M,3=T,4=T,5=M,6=M,7=T,8=T...
     const mayder_shifts=[1,0,0,1,1,0,0,1,1]; // 0=mañana,1=tarde
     const idx=Math.max(0,Math.min(weekNum,mayder_shifts.length-1));
     const isTarde=emp.mayder?mayder_shifts[idx]===1:mayder_shifts[idx]===0;
-    return isTarde?'T':'M';
+    if(isTarde) return 'T';
+    // Es mañana → comprobar si hoy le toca abrir con Iciar a las 9:30
+    if(store==='comptoir'){
+      const opener=getOpenerWithIciar(emps,d,wo2);
+      if(opener&&opener.id===emp.id) return 'M930';
+    }
+    return 'M';
   }
 
   // Mari Carmen: misma rotacion que Uxue en Comptoir
@@ -521,15 +637,14 @@ function getShift(emps,emp,date,store){
   }
 
   // Comodin Comptoir: cubre el turno de quien descansa ese dia
-  if(emp.cover){
+  if(emp.cover&&!emp.coverB){
     const resting=emps.find(e=>!e.cover&&e.dayOff===di);
     if(resting){
-      // Calcular qué turno hacía el que descansa
-      if(resting.fixedShift==='M') return 'M';
+      // Iciar de festivo → comodín abre a las 9:30
+      if(resting.fixedShift==='M') return 'M930';
       if(resting.fixedShift==='T') return 'T';
-      if(resting.splitHondartza) return 'T'; // Oihana fija tardes
+      if(resting.splitHondartza) return 'T';
       if(resting.mayder){
-        // Usar la misma lógica de Mayder para ese día
         const REF=new Date(2026,6,5);REF.setHours(0,0,0,0);
         const dd=new Date(d);dd.setHours(0,0,0,0);
         const weekNum=Math.max(0,Math.floor((dd-REF)/(7*86400000)));
@@ -538,13 +653,12 @@ function getShift(emps,emp,date,store){
         return mayder_shifts[idx]===1?'T':'M';
       }
       if(resting.maura){
-        // Maura es espejo de Mayder
         const REF=new Date(2026,6,5);REF.setHours(0,0,0,0);
         const dd=new Date(d);dd.setHours(0,0,0,0);
         const weekNum=Math.max(0,Math.floor((dd-REF)/(7*86400000)));
         const mayder_shifts=[1,0,0,1,1,0,0,1,1];
         const idx=Math.min(weekNum,mayder_shifts.length-1);
-        return mayder_shifts[idx]===0?'T':'M'; // espejo
+        return mayder_shifts[idx]===0?'T':'M';
       }
       return baseShiftRot(resting,wo2);
     }
@@ -576,6 +690,15 @@ function getShift(emps,emp,date,store){
     return 'M';
   }
 
+  // Quien acompaña a Iciar a las 9:30 hoy (rotación diaria entre los de mañanas)
+  if(store==='comptoir'){
+    const myShift=getEmpShiftForDay(emp,d,wo2);
+    if(myShift==='M'){
+      const opener=getOpenerWithIciar(emps,d,wo2);
+      if(opener&&opener.id===emp.id) return 'M930';
+    }
+  }
+
   return baseShift(emp,wo2);
 }
 function baseShiftRot(emp,wo){
@@ -584,7 +707,7 @@ function baseShiftRot(emp,wo){
   if(emp.rotId!==undefined)return(((wo+emp.rotId)%2+2)%2===0)?'M':'T';
   return'M';
 }
-function works(t){return t==='M'||t==='T'||t==='MN'||t==='F'||t==='U'||t==='CN'||t==='OH'||t==='M2'||t==='T2'||t==='F2'||t==='I3'||t==='O3';}
+function works(t){return t==='M'||t==='T'||t==='MN'||t==='F'||t==='U'||t==='CN'||t==='OH'||t==='M2'||t==='T2'||t==='F2'||t==='I3'||t==='O3'||t==='M930';}
 function shiftHours(t,store){
   if(t==='F') return 6; // 10-12 (2h) + 19-23 (4h)
   if(t==='MN') return 7; // 12-19
@@ -595,12 +718,13 @@ function shiftHours(t,store){
   if(t==='T2') return 5;  // Apertura 15-20
   if(t==='F2') return 5;  // Fermin apertura 10-15
   if(t==='I3') return 6.5; // Iciar apertura 10-16:30
+  if(t==='M930') return 7;   // Turno apertura 9:30-16:30
   if(t==='O3') return 6;   // Oihana apertura Hond+Comp
   if(t==='M'||t==='T') return store?STORES[store].shiftH:6.5;
   return 0;
 }
-function pilLabel(t){return{M:'Mañana',T:'Tarde',OFF:'Festivo',F:'10–12 / 19–23',MN:'12–19',U:'10–14 / 16:30–19',CN:'Cob. Nora',OH:'Hond.14–16:30 + Comp.16:30–23',M2:'Apertura 10–15',T2:'Apertura 15–20',F2:'Apertura 10–15',I3:'Comptoir 10–16:30',O3:'Hond.14–16:30 + Comp.16:30–20'}[t]||'';}
-function pillClass(t){return{M:'pill-M',T:'pill-T',OFF:'pill-OFF',F:'pill-F',MN:'pill-MN',U:'pill-U',CN:'pill-CN',OH:'pill-OH',M2:'pill-M2',T2:'pill-T2',F2:'pill-F2',I3:'pill-M',O3:'pill-OH'}[t]||'pill-M';}
+function pilLabel(t){return{M:'Mañana 10–16:30',T:'Tarde 16:30–23',OFF:'Festivo',F:'10–12 / 19–23',MN:'12–19',U:'10–14 / 16:30–19',CN:'Cob. Nora',OH:'Hond.14–16:30 + Comp.16:30–23',M2:'Apertura 10–15',T2:'Apertura 15–20',F2:'Apertura 10–15',I3:'Comptoir 10–16:30',O3:'Hond.14–16:30 + Comp.16:30–20',M930:'★ Apertura 9:30–16:30'}[t]||'';}
+function pillClass(t){return{M:'pill-M',T:'pill-T',OFF:'pill-OFF',F:'pill-F',MN:'pill-MN',U:'pill-U',CN:'pill-CN',OH:'pill-OH',M2:'pill-M2',T2:'pill-T2',F2:'pill-F2',I3:'pill-M',O3:'pill-OH',M930:'pill-M930'}[t]||'pill-M';}
 function initials(name){return name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();}
 function fmt(d){return d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'});}
 function getMondayOfWeek(off){const d=new Date(REF_MONDAY);d.setDate(REF_MONDAY.getDate()+off*7);return d;}
@@ -731,7 +855,7 @@ function renderWeekly(store){
     for(let d=0;d<7;d++){
       const dt=new Date(monday);dt.setDate(monday.getDate()+d);
       const dim=dt<sh.startDate,isToday=dt.getTime()===today.getTime();
-      const type=dim?null:getShift(sh.emps,emp,dt);
+      const type=dim?null:getShift(sh.emps,emp,dt,store);
       if(!dim){if(type==='M')tM++;else if(type==='T')tT++;else if(type==='OFF')tOff++;}
       cells+=`<td class="${isToday?'today-cell':''}" style="${dim?'opacity:.2':''}">
         ${!dim&&type?`<span class="pill ${pillClass(type)}">${pilLabel(type)}</span>`:'–'}
@@ -768,8 +892,9 @@ function renderMonthly(store){
     let cls='month-cell'+(isToday?' today-month':'')+(bs?' before-start':'');
     let pills='';
     sh.emps.forEach(emp=>{
-      const t=getShift(sh.emps,emp,date);
-      pills+=`<span class="month-pill mp-${t}" title="${emp.name}: ${pilLabel(t)}">${emp.name.split(' ')[0]} ${t==='OFF'?'🏖':pilLabel(t).split('–')[0]||t}</span>`;
+      const t=getShift(sh.emps,emp,date,store);
+      const shortLabel=t==='OFF'?'🏖':t==='M930'?'★ 9:30':t==='M'?'M':t==='T'?'T':pilLabel(t).split('–')[0]||t;
+pills+=`<span class="month-pill mp-${t}" title="${emp.name}: ${pilLabel(t)}">${emp.name.split(' ')[0]} ${shortLabel}</span>`;
     });
     grid.innerHTML+=`<div class="${cls}"><div class="month-date ${isToday?'is-today':''}">${day}</div>${pills}</div>`;
   }
@@ -809,7 +934,7 @@ function renderEmpView(store){
   const first=new Date(yr,mo,1),last=new Date(yr,mo+1,0);
   let sdow=first.getDay()-1;if(sdow<0)sdow=6;
   let mM=0,mT=0,mOff=0,mH=0;
-  for(let d=1;d<=last.getDate();d++){const dt=new Date(yr,mo,d);if(dt<sh.startDate)continue;const t=getShift(sh.emps,emp,dt);if(t==='OFF'){mOff++;}else if(works(t)){if(t==='M')mM++;else if(t==='T')mT++;mH+=shiftHours(t,store);}}
+  for(let d=1;d<=last.getDate();d++){const dt=new Date(yr,mo,d);if(dt<sh.startDate)continue;const t=getShift(sh.emps,emp,dt,store);if(t==='OFF'){mOff++;}else if(works(t)){if(t==='M')mM++;else if(t==='T')mT++;mH+=shiftHours(t,store);}}
   const adjMonth=ADJS[store].filter(a=>{const d=new Date(a.date+'T12:00');return a.empId===st.selectedEmp&&d.getFullYear()===yr&&d.getMonth()===mo;}).reduce((s,a)=>s+a.hours,0);
   document.getElementById('empMonthStats-'+store).innerHTML=`
     <div class="stat"><div class="stat-label">Mañanas</div><div class="stat-value" style="color:var(--M-text)">${mM}</div><div class="stat-sub">este mes</div></div>
@@ -824,8 +949,8 @@ function renderEmpView(store){
   for(let day=1;day<=last.getDate();day++){
     const date=new Date(yr,mo,day);date.setHours(0,0,0,0);
     const isToday=date.getTime()===today.getTime(),bs=date<sh.startDate;
-    const t=getShift(sh.emps,emp,date);
-    const slMap={M:'Mañana',T:'Tarde',OFF:'Libre',F:'10-12/19-23',MN:'12-19',U:'10-14/16:30-19',CN:'Cob.Nora',OH:'Hond+Comp',M2:'Aper.10-15',T2:'Aper.15-20',F2:'Aper.10-15',I3:'10-16:30',O3:'Hond+Comp20'};
+    const t=getShift(sh.emps,emp,date,store);
+    const slMap={M:'Mañana',T:'Tarde',OFF:'Libre',F:'10-12/19-23',MN:'12-19',U:'10-14/16:30-19',CN:'Cob.Nora',OH:'Hond+Comp',M2:'Aper.10-15',T2:'Aper.15-20',F2:'Aper.10-15',I3:'10-16:30',O3:'Hond+Comp20',M930:'⭐ 9:30-16:30'};
     const sl=slMap[t]||t;
     grid.innerHTML+=`<div class="emp-day d-${t}${isToday?' d-today':''}${bs?' before-start':''}"><div class="emp-day-num ${isToday?'is-today':''}">${day}</div><div class="emp-day-shift">${sl}</div></div>`;
   }
@@ -889,7 +1014,141 @@ function renderStore(store){
 }
 
 function exportPDF(){
-  setTimeout(()=>window.print(),100);
+  // Populate emp selector with current store's employees
+  const sh = STORES[currentStore];
+  const sel = document.getElementById('pdfEmpSelect');
+  sel.innerHTML = sh.emps.map((e,i)=>`<option value="${i}">${e.name} — ${e.role}</option>`).join('');
+  document.getElementById('pdfType').value = 'view';
+  document.getElementById('pdfEmpRow').style.display = 'none';
+  document.getElementById('pdfModal').classList.add('open');
+}
+
+function onPdfTypeChange(){
+  const t = document.getElementById('pdfType').value;
+  document.getElementById('pdfEmpRow').style.display = t==='emp'?'block':'none';
+}
+
+function closePdfModal(){
+  document.getElementById('pdfModal').classList.remove('open');
+}
+
+function doPdfExport(){
+  const type = document.getElementById('pdfType').value;
+  if(type==='view'){
+    closePdfModal();
+    setTimeout(()=>window.print(),150);
+    return;
+  }
+  // Ficha de empleado
+  const empIdx = parseInt(document.getElementById('pdfEmpSelect').value);
+  const sh = STORES[currentStore];
+  const emp = sh.emps[empIdx];
+  closePdfModal();
+  setTimeout(()=>printEmpCard(currentStore, empIdx), 150);
+}
+
+function printEmpCard(store, empIdx){
+  const sh = STORES[store];
+  const emp = sh.emps[empIdx];
+  const DAYS_ES = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+  const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const AVATARS = ['#deeaf8','#fae5d8','#ddf0d0','#faebd0','#e8e0f8','#fde8d8','#d8f0e8'];
+  const AV_TEXT = ['#1a3d6e','#7a2e0e','#1e5c0a','#7a4a08','#3d1a6e','#6e3a1a','#0a5c3a'];
+  const av = AVATARS[empIdx % AVATARS.length];
+  const avt = AV_TEXT[empIdx % AV_TEXT.length];
+  const START = new Date(2026,6,1); START.setHours(0,0,0,0);
+  const END   = new Date(2026,8,31); END.setHours(0,0,0,0);
+  const dayoffs = ['lunes','martes','miércoles','jueves','viernes','sábados','domingos'];
+  const doLabel = emp.dayOff>=0 ? dayoffs[emp.dayOff] : 'ninguno';
+
+  // Build schedule
+  const weeks = {};
+  let cur = new Date(START);
+  while(cur <= END){
+    const type = getShift(sh.emps, emp, cur, store);
+    const dow = cur.getDay()===0?6:cur.getDay()-1;
+    const mon = new Date(cur); mon.setDate(cur.getDate()-dow);
+    const wkey = mon.toISOString().slice(0,10);
+    if(!weeks[wkey]) weeks[wkey]={mon:new Date(mon),days:[]};
+    weeks[wkey].days.push({date:new Date(cur),dow,type});
+    cur.setDate(cur.getDate()+1);
+  }
+
+  // Group by month and build HTML
+  const monthSections = {};
+  Object.values(weeks).forEach(w=>{
+    const moKey = MONTHS_ES[w.mon.getMonth()];
+    if(!monthSections[moKey]) monthSections[moKey]=[];
+    const sun=new Date(w.mon);sun.setDate(w.mon.getDate()+6);
+    const fmtD=d=>d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'});
+    let rows='',wH=0;
+    w.days.forEach(({date,dow,type})=>{
+      const h=shiftHours(type,store); wH+=h;
+      const label=pilLabel(type)||type;
+      rows+=`<div style="display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid #f0ede6;">
+        <div style="font-size:12px;font-weight:500;color:#7a7870;width:130px;flex-shrink:0;">${DAYS_ES[dow]} ${date.toLocaleDateString('es-ES',{day:'2-digit',month:'short'})}</div>
+        <span style="display:inline-block;border-radius:5px;padding:2px 8px;font-size:11px;font-weight:500;background:${getShiftColor(type)};color:${getShiftTextColor(type)}">${label}</span>
+        <div style="margin-left:auto;font-size:11px;font-family:monospace;color:#7a7870;">${h>0?h+'h':''}</div>
+      </div>`;
+    });
+    monthSections[moKey].push({label:`${fmtD(w.mon)}–${fmtD(sun)}`,rows,wH});
+  });
+
+  const totalH=Object.values(monthSections).flatMap(w=>w).reduce((s,w)=>s+w.wH,0);
+
+  // Render inline in a full-page overlay
+  let monthHTML='';
+  Object.entries(monthSections).forEach(([mo,wks])=>{
+    const moH=wks.reduce((s,w)=>s+w.wH,0);
+    monthHTML+=`<div style="margin-bottom:1.5rem;">
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#7a7870;padding-bottom:6px;border-bottom:1px solid #e4e2da;margin-bottom:10px;display:flex;justify-content:space-between;"><span>${mo} 2026</span><span>${moH}h</span></div>`;
+    wks.forEach(w=>{
+      monthHTML+=`<div style="background:#fff;border:1px solid #e4e2da;border-radius:10px;overflow:hidden;margin-bottom:8px;">
+        <div style="background:#f0ede6;padding:7px 12px;font-size:11px;font-weight:600;color:#7a7870;display:flex;justify-content:space-between;"><span>${w.label}</span><span>${w.wH}h</span></div>
+        ${w.rows}
+      </div>`;
+    });
+    monthHTML+='</div>';
+  });
+
+  // Show in overlay panel
+  let overlay = document.getElementById('empCardOverlay');
+  if(!overlay){
+    overlay = document.createElement('div');
+    overlay.id = 'empCardOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:#f7f6f2;z-index:200;overflow-y:auto;padding:2rem 1.5rem;';
+    document.body.appendChild(overlay);
+  }
+  overlay.innerHTML = `
+    <div style="max-width:680px;margin:0 auto;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+        <button onclick="document.getElementById('empCardOverlay').remove()" style="padding:8px 16px;border-radius:8px;border:1px solid #ccc9be;background:#fff;font-family:inherit;font-size:13px;cursor:pointer;">← Volver</button>
+        <button onclick="window.print()" style="padding:8px 16px;border-radius:8px;border:none;background:#1a1916;color:#fff;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;">🖨 Imprimir PDF</button>
+      </div>
+      <div style="text-align:center;padding:2rem 1rem;margin-bottom:2rem;background:#fff;border-radius:14px;border:1px solid #e4e2da;">
+        <div style="font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:#7a7870;margin-bottom:.75rem;">${sh.label} · Hendaye</div>
+        <div style="width:56px;height:56px;border-radius:50%;background:${av};color:${avt};display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;margin:0 auto .75rem;">${emp.name.slice(0,2).toUpperCase()}</div>
+        <div style="font-size:24px;font-weight:600;margin-bottom:.25rem;">${emp.name}</div>
+        <div style="font-size:13px;color:#7a7870;margin-bottom:1.25rem;">${emp.role}</div>
+        <div style="width:32px;height:2px;background:${avt};margin:0 auto 1.25rem;"></div>
+        <div style="display:flex;justify-content:center;gap:2rem;flex-wrap:wrap;">
+          <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#7a7870;margin-bottom:3px;">Período</div><div style="font-size:13px;font-weight:500;">Julio–Agosto 2026</div></div>
+          <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#7a7870;margin-bottom:3px;">Festivo</div><div style="font-size:13px;font-weight:500;">${emp.dayOff>=0?doLabel:'Ninguno'}</div></div>
+          <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#7a7870;margin-bottom:3px;">Total horas</div><div style="font-size:13px;font-weight:500;">${totalH}h</div></div>
+        </div>
+      </div>
+      ${monthHTML}
+    </div>`;
+  overlay.scrollTop = 0;
+}
+
+function getShiftColor(t){
+  const map={M:'#deeaf8',T:'#fae5d8',OFF:'#efefeb',F:'#f0e8f8',MN:'#e8f4f0',U:'#fff4e0',CN:'#fce8f0',OH:'#f4eafc',M2:'#deeaf8',T2:'#fae5d8',F2:'#deeaf8',I3:'#deeaf8',O3:'#f4eafc',M930:'#c0d8f4'};
+  return map[t]||'#efefeb';
+}
+function getShiftTextColor(t){
+  const map={M:'#1a3d6e',T:'#7a2e0e',OFF:'#7a7870',F:'#5a1a7a',MN:'#0a4a3a',U:'#7a4a00',CN:'#7a0a3a',OH:'#5a0a7a',M2:'#1a3d6e',T2:'#7a2e0e',F2:'#1a3d6e',I3:'#1a3d6e',O3:'#5a0a7a',M930:'#0a2d5e'};
+  return map[t]||'#7a7870';
 }
 
 // ── INIT ───────────────────────────────────────────────────────────────────
