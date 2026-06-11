@@ -207,6 +207,10 @@
 
   @media print{
     body{background:#fff;padding:0.5rem;}
+    /* Si la ficha de empleado está abierta, ocultar todo lo demás */
+    body:has(#empCardOverlay) > *:not(#empCardOverlay){display:none!important;}
+    #empCardOverlay{position:static!important;padding:0!important;}
+    #empCardOverlay .no-print{display:none!important;}
     .no-print{display:none!important;}
     .store-tabs{display:none;}
     .table-wrap{box-shadow:none;border:1px solid #ccc;}
@@ -407,9 +411,9 @@ const STORES = {
     label:'Boutique de la Plage', startDate:START_DATE, shiftH:6.5,
     emps:[
       {id:0,name:'Fermin',     role:'Horario especial',    special:'fermin',  dayOff:-1},
-      {id:1,name:'Manoli',     role:'Horario especial',    special:'manoli',  dayOff:0},
+      {id:1,name:'Manoli',     role:'Horario especial',    special:'manoli',  dayOff:1},
       {id:2,name:'Mari Carmen',role:'Rotación (par Uxue)', pairUxue:true,     dayOff:2},
-      {id:3,name:'Empleado 4', role:'Rotación semanal',    rotId:0,           dayOff:1},
+      {id:3,name:'Empleado 4', role:'Rotación semanal',    rotId:0,           dayOff:0},
       {id:4,name:'Margaux', role:'Espejo de Mari Carmen', pairUxueMirror:true, dayOff:3},
       {id:5,name:'Empleado 6', role:'Rotación semanal',    rotId:2,           dayOff:4},
       {id:6,name:'Comodín B.', role:'Comodín cobertura',   coverB:true,       dayOff:5},
@@ -1034,17 +1038,14 @@ function closePdfModal(){
 
 function doPdfExport(){
   const type = document.getElementById('pdfType').value;
+  closePdfModal();
   if(type==='view'){
-    closePdfModal();
-    setTimeout(()=>window.print(),150);
+    setTimeout(()=>window.print(),300);
     return;
   }
-  // Ficha de empleado
+  // Ficha de empleado - mostrar directamente (sin print automático)
   const empIdx = parseInt(document.getElementById('pdfEmpSelect').value);
-  const sh = STORES[currentStore];
-  const emp = sh.emps[empIdx];
-  closePdfModal();
-  setTimeout(()=>printEmpCard(currentStore, empIdx), 150);
+  printEmpCard(currentStore, empIdx);
 }
 
 function printEmpCard(store, empIdx){
@@ -1056,74 +1057,63 @@ function printEmpCard(store, empIdx){
   const AV_TEXT = ['#1a3d6e','#7a2e0e','#1e5c0a','#7a4a08','#3d1a6e','#6e3a1a','#0a5c3a'];
   const av = AVATARS[empIdx % AVATARS.length];
   const avt = AV_TEXT[empIdx % AV_TEXT.length];
-  const START = new Date(2026,6,1); START.setHours(0,0,0,0);
-  const END   = new Date(2026,8,31); END.setHours(0,0,0,0);
   const dayoffs = ['lunes','martes','miércoles','jueves','viernes','sábados','domingos'];
   const doLabel = emp.dayOff>=0 ? dayoffs[emp.dayOff] : 'ninguno';
 
-  // Build schedule
-  const weeks = {};
+  // Rango: 1 julio – 31 agosto 2026
+  const START = new Date(2026,6,1); START.setHours(0,0,0,0);
+  const END   = new Date(2026,7,31); END.setHours(0,0,0,0);
+
+  // Agrupar por MES REAL del día (no por el lunes de la semana)
+  const months = {}; // {6:[días], 7:[días]}
   let cur = new Date(START);
+  let totalH = 0;
   while(cur <= END){
     const type = getShift(sh.emps, emp, cur, store);
     const dow = cur.getDay()===0?6:cur.getDay()-1;
-    const mon = new Date(cur); mon.setDate(cur.getDate()-dow);
-    const wkey = mon.toISOString().slice(0,10);
-    if(!weeks[wkey]) weeks[wkey]={mon:new Date(mon),days:[]};
-    weeks[wkey].days.push({date:new Date(cur),dow,type});
+    const h = shiftHours(type, store);
+    totalH += h;
+    const mo = cur.getMonth();
+    if(!months[mo]) months[mo] = [];
+    months[mo].push({date:new Date(cur), dow, type, h});
     cur.setDate(cur.getDate()+1);
   }
 
-  // Group by month and build HTML
-  const monthSections = {};
-  Object.values(weeks).forEach(w=>{
-    const moKey = MONTHS_ES[w.mon.getMonth()];
-    if(!monthSections[moKey]) monthSections[moKey]=[];
-    const sun=new Date(w.mon);sun.setDate(w.mon.getDate()+6);
-    const fmtD=d=>d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'});
-    let rows='',wH=0;
-    w.days.forEach(({date,dow,type})=>{
-      const h=shiftHours(type,store); wH+=h;
-      const label=pilLabel(type)||type;
-      rows+=`<div style="display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid #f0ede6;">
-        <div style="font-size:12px;font-weight:500;color:#7a7870;width:130px;flex-shrink:0;">${DAYS_ES[dow]} ${date.toLocaleDateString('es-ES',{day:'2-digit',month:'short'})}</div>
+  // Construir HTML por mes
+  let monthHTML = '';
+  Object.keys(months).sort((a,b)=>a-b).forEach(mo=>{
+    const days = months[mo];
+    const moH = days.reduce((s,d)=>s+d.h, 0);
+    monthHTML += `<div style="margin-bottom:1.75rem;">
+      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#7a7870;padding-bottom:8px;border-bottom:2px solid #e4e2da;margin-bottom:12px;display:flex;justify-content:space-between;">
+        <span>${MONTHS_ES[mo]} 2026</span><span>${moH}h</span>
+      </div>
+      <div style="background:#fff;border:1px solid #e4e2da;border-radius:10px;overflow:hidden;">`;
+    days.forEach(({date,dow,type,h})=>{
+      const label = pilLabel(type)||type;
+      const isWeekStart = dow===0;
+      monthHTML += `<div style="display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid #f0ede6;${isWeekStart?'border-top:2px solid #e4e2da;':''}">
+        <div style="font-size:12px;font-weight:500;color:#7a7870;width:140px;flex-shrink:0;">${DAYS_ES[dow]} ${date.toLocaleDateString('es-ES',{day:'2-digit',month:'short'})}</div>
         <span style="display:inline-block;border-radius:5px;padding:2px 8px;font-size:11px;font-weight:500;background:${getShiftColor(type)};color:${getShiftTextColor(type)}">${label}</span>
         <div style="margin-left:auto;font-size:11px;font-family:monospace;color:#7a7870;">${h>0?h+'h':''}</div>
       </div>`;
     });
-    monthSections[moKey].push({label:`${fmtD(w.mon)}–${fmtD(sun)}`,rows,wH});
+    monthHTML += `</div></div>`;
   });
 
-  const totalH=Object.values(monthSections).flatMap(w=>w).reduce((s,w)=>s+w.wH,0);
-
-  // Render inline in a full-page overlay
-  let monthHTML='';
-  Object.entries(monthSections).forEach(([mo,wks])=>{
-    const moH=wks.reduce((s,w)=>s+w.wH,0);
-    monthHTML+=`<div style="margin-bottom:1.5rem;">
-      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#7a7870;padding-bottom:6px;border-bottom:1px solid #e4e2da;margin-bottom:10px;display:flex;justify-content:space-between;"><span>${mo} 2026</span><span>${moH}h</span></div>`;
-    wks.forEach(w=>{
-      monthHTML+=`<div style="background:#fff;border:1px solid #e4e2da;border-radius:10px;overflow:hidden;margin-bottom:8px;">
-        <div style="background:#f0ede6;padding:7px 12px;font-size:11px;font-weight:600;color:#7a7870;display:flex;justify-content:space-between;"><span>${w.label}</span><span>${w.wH}h</span></div>
-        ${w.rows}
-      </div>`;
-    });
-    monthHTML+='</div>';
-  });
-
-  // Show in overlay panel
+  // Mostrar en overlay
   let overlay = document.getElementById('empCardOverlay');
   if(!overlay){
     overlay = document.createElement('div');
     overlay.id = 'empCardOverlay';
-    overlay.style.cssText = 'position:fixed;inset:0;background:#f7f6f2;z-index:200;overflow-y:auto;padding:2rem 1.5rem;';
+    overlay.style.cssText = 'position:fixed;inset:0;background:#f7f6f2;z-index:200;overflow-y:auto;padding:1.5rem;';
     document.body.appendChild(overlay);
   }
   overlay.innerHTML = `
     <div style="max-width:680px;margin:0 auto;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+      <div class="no-print" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
         <button onclick="document.getElementById('empCardOverlay').remove()" style="padding:8px 16px;border-radius:8px;border:1px solid #ccc9be;background:#fff;font-family:inherit;font-size:13px;cursor:pointer;">← Volver</button>
-        <button onclick="window.print()" style="padding:8px 16px;border-radius:8px;border:none;background:#1a1916;color:#fff;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;">🖨 Imprimir PDF</button>
+        <button onclick="setTimeout(function(){window.print();},100);" style="padding:8px 16px;border-radius:8px;border:none;background:#1a1916;color:#fff;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;">🖨 Imprimir / Guardar PDF</button>
       </div>
       <div style="text-align:center;padding:2rem 1rem;margin-bottom:2rem;background:#fff;border-radius:14px;border:1px solid #e4e2da;">
         <div style="font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:#7a7870;margin-bottom:.75rem;">${sh.label} · Hendaye</div>
@@ -1140,6 +1130,7 @@ function printEmpCard(store, empIdx){
       ${monthHTML}
     </div>`;
   overlay.scrollTop = 0;
+  window.scrollTo(0,0);
 }
 
 function getShiftColor(t){
