@@ -416,7 +416,7 @@ const STORES = {
       {id:3,name:'Empleado 4', role:'Rotación semanal',    rotId:0,           dayOff:0},
       {id:4,name:'Margaux', role:'Espejo de Mari Carmen', pairUxueMirror:true, dayOff:3},
       {id:5,name:'Empleado 6', role:'Rotación semanal',    rotId:2,           dayOff:4},
-      {id:6,name:'Comodín B.', role:'Comodín cobertura',   coverB:true,       dayOff:5},
+      {id:6,name:'Miriam', role:'Comodín cobertura',   coverB:true,       dayOff:5},
     ]
   },
   hondartza: {
@@ -505,11 +505,6 @@ function getOpeningShift(emp,date,emps,store){
   const myShift=getEmpShiftForDay(emp,d,wo2);
   if(myShift==='T') return 'T2';
 
-  // Es mañana → comprobar si acompaña a Iciar a las 9:30
-  if(store==='comptoir'){
-    const opener=getOpenerWithIciar(emps,d,wo2);
-    if(opener&&opener.id===emp.id) return 'M930';
-  }
   return 'M2';
 }
 
@@ -599,10 +594,10 @@ function getShift(emps,emp,date,store){
   // Sábado especial: Oihana festivo → Iciar cubre tardes, Comodín abre mañanas
   const isSat = di === 5;
   if(isSat && emp.fixedShift==='M') return 'OH'; // Iciar sábado: Hond 14-16:30 + Comp 16:30-23
-  if(isSat && emp.cover && !emp.coverB) return 'M930'; // Comodín abre el sábado
+  if(isSat && emp.cover && !emp.coverB) return 'M'; // Comodín sábado mañanas
 
-  // Iciar siempre mañanas 9:30 (excepto sábado ya tratado)
-  if(emp.fixedShift==='M') return 'M930';
+  // Iciar siempre mañanas (10:00)
+  if(emp.fixedShift==='M') return 'M';
 
   // Oihana split: Hondartza 14-16:30 + Comptoir 16:30-23
   if(emp.splitHondartza) return 'OH';
@@ -619,13 +614,7 @@ function getShift(emps,emp,date,store){
     const mayder_shifts=[1,0,0,1,1,0,0,1,1]; // 0=mañana,1=tarde
     const idx=Math.max(0,Math.min(weekNum,mayder_shifts.length-1));
     const isTarde=emp.mayder?mayder_shifts[idx]===1:mayder_shifts[idx]===0;
-    if(isTarde) return 'T';
-    // Es mañana → comprobar si hoy le toca abrir con Iciar a las 9:30
-    if(store==='comptoir'){
-      const opener=getOpenerWithIciar(emps,d,wo2);
-      if(opener&&opener.id===emp.id) return 'M930';
-    }
-    return 'M';
+    return isTarde?'T':'M';
   }
 
   // Mari Carmen: misma rotacion que Uxue en Comptoir
@@ -645,7 +634,7 @@ function getShift(emps,emp,date,store){
     const resting=emps.find(e=>!e.cover&&e.dayOff===di);
     if(resting){
       // Iciar de festivo → comodín abre a las 9:30
-      if(resting.fixedShift==='M') return 'M930';
+      if(resting.fixedShift==='M') return 'M';
       if(resting.fixedShift==='T') return 'T';
       if(resting.splitHondartza) return 'T';
       if(resting.mayder){
@@ -692,15 +681,6 @@ function getShift(emps,emp,date,store){
     // Domingo: cubre a Nora en Hondartza (10-14 y 16:30-19)
     if(di===6) return 'CN';
     return 'M';
-  }
-
-  // Quien acompaña a Iciar a las 9:30 hoy (rotación diaria entre los de mañanas)
-  if(store==='comptoir'){
-    const myShift=getEmpShiftForDay(emp,d,wo2);
-    if(myShift==='M'){
-      const opener=getOpenerWithIciar(emps,d,wo2);
-      if(opener&&opener.id===emp.id) return 'M930';
-    }
   }
 
   return baseShift(emp,wo2);
@@ -1085,8 +1065,8 @@ function printEmpCard(store, empIdx){
     const days = months[mo];
     const moH = days.reduce((s,d)=>s+d.h, 0);
     monthHTML += `<div style="margin-bottom:1.75rem;">
-      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#7a7870;padding-bottom:8px;border-bottom:2px solid #e4e2da;margin-bottom:12px;display:flex;justify-content:space-between;">
-        <span>${MONTHS_ES[mo]} 2026</span><span>${moH}h</span>
+      <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#7a7870;padding-bottom:8px;border-bottom:2px solid #e4e2da;margin-bottom:12px;">
+        ${MONTHS_ES[mo]} 2026
       </div>
       <div style="background:#fff;border:1px solid #e4e2da;border-radius:10px;overflow:hidden;">`;
     days.forEach(({date,dow,type,h})=>{
@@ -1095,7 +1075,7 @@ function printEmpCard(store, empIdx){
       monthHTML += `<div style="display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid #f0ede6;${isWeekStart?'border-top:2px solid #e4e2da;':''}">
         <div style="font-size:12px;font-weight:500;color:#7a7870;width:140px;flex-shrink:0;">${DAYS_ES[dow]} ${date.toLocaleDateString('es-ES',{day:'2-digit',month:'short'})}</div>
         <span style="display:inline-block;border-radius:5px;padding:2px 8px;font-size:11px;font-weight:500;background:${getShiftColor(type)};color:${getShiftTextColor(type)}">${label}</span>
-        <div style="margin-left:auto;font-size:11px;font-family:monospace;color:#7a7870;">${h>0?h+'h':''}</div>
+
       </div>`;
     });
     monthHTML += `</div></div>`;
@@ -1124,7 +1104,7 @@ function printEmpCard(store, empIdx){
         <div style="display:flex;justify-content:center;gap:2rem;flex-wrap:wrap;">
           <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#7a7870;margin-bottom:3px;">Período</div><div style="font-size:13px;font-weight:500;">Julio–Agosto 2026</div></div>
           <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#7a7870;margin-bottom:3px;">Festivo</div><div style="font-size:13px;font-weight:500;">${emp.dayOff>=0?doLabel:'Ninguno'}</div></div>
-          <div><div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#7a7870;margin-bottom:3px;">Total horas</div><div style="font-size:13px;font-weight:500;">${totalH}h</div></div>
+
         </div>
       </div>
       ${monthHTML}
