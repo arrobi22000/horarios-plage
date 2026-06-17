@@ -402,21 +402,21 @@ const STORES = {
       {id:1,name:'Oihana',  role:'Hondartza 14–16:30 + Comptoir 16:30–23', fixedShift:'T',dayOff:5,splitHondartza:true},
       {id:2,name:'Uxue',    role:'Rotación semanal',                rotId:0,       dayOff:2},
       {id:3,name:'Lucie',   role:'Espejo de Uxue',                  rotId:1,       dayOff:3},
-      {id:4,name:'Mayder',  role:'Rotación semanal',                mayder:true,   dayOff:0},
-      {id:5,name:'Maura',   role:'Espejo de Mayder',                maura:true,    dayOff:6},
+      {id:4,name:'Mayder',  role:'Rotación semanal',                rotId:0,       dayOff:6},
+      {id:5,name:'Maura',   role:'Rotación semanal',                rotId:1,       dayOff:0},
       {id:6,name:'Irati', role:'Correturnos',                     cover:true,    dayOff:1},
     ]
   },
   boutique: {
     label:'Boutique de la Plage', startDate:START_DATE, shiftH:6.5,
     emps:[
-      {id:0,name:'Fermin',     role:'Horario especial',    special:'fermin',  dayOff:-1},
-      {id:1,name:'Manoli',     role:'Horario especial',    special:'manoli',  dayOff:1},
-      {id:2,name:'Mari Carmen',role:'Rotación (par Uxue)', pairUxue:true,     dayOff:2},
-      {id:3,name:'Empleado 4', role:'Rotación semanal',    rotId:0,           dayOff:0},
-      {id:4,name:'Margaux', role:'Espejo de Mari Carmen', pairUxueMirror:true, dayOff:3},
-      {id:5,name:'Empleado 6', role:'Rotación semanal',    rotId:2,           dayOff:4},
-      {id:6,name:'Miriam', role:'Comodín cobertura',   coverB:true,       dayOff:5},
+      {id:0,name:'Fermin',     role:'Horario especial',        special:'fermin', dayOff:-1},
+      {id:1,name:'Manoli',     role:'Horario especial',        special:'manoli', dayOff:1},
+      {id:2,name:'Mari Carmen',role:'Pareja mañana/tarde (A)',  bPairA:true,      dayOff:2},
+      {id:3,name:'Luna',       role:'Pareja mañana/tarde (A)',  bPairA:true,      dayOff:0},
+      {id:4,name:'Margot',     role:'Pareja mañana/tarde (B)',  bPairB:true,      dayOff:3},
+      {id:5,name:'Davia',      role:'Pareja mañana/tarde (B)',  bPairB:true,      dayOff:4},
+      {id:6,name:'Sara',       role:'Correturnos',             coverB:true,      dayOff:5},
     ]
   },
   hondartza: {
@@ -510,31 +510,9 @@ function getOpeningShift(emp,date,emps,store){
 
 // ── APERTURA 9:30 ICIAR ────────────────────────────────────────────────────
 // Devuelve true si este empleado acompaña a Iciar a las 9:30 ese día
-function getMayderShift(wOff2){
-  const REF=new Date(2026,6,5);REF.setHours(0,0,0,0);
-  const weekNum=Math.max(0,Math.min(Math.floor((new Date()-REF)/(7*86400000)),8));
-  // Use wOff2 relative to REF
-  const mayder_shifts=[1,0,0,1,1,0,0,1,1];
-  const idx=Math.max(0,Math.min(wOff2,mayder_shifts.length-1));
-  return mayder_shifts[idx]===1?'T':'M';
-}
 function getEmpShiftForDay(e, d, wOff2){
   if(e.fixedShift) return e.fixedShift;
   if(e.splitHondartza) return 'T';
-  if(e.mayder){
-    const REF=new Date(2026,6,5);REF.setHours(0,0,0,0);
-    const dd=new Date(d);dd.setHours(0,0,0,0);
-    const weekNum=Math.max(0,Math.floor((dd-REF)/(7*86400000)));
-    const mayder_shifts=[1,0,0,1,1,0,0,1,1];
-    return mayder_shifts[Math.min(weekNum,mayder_shifts.length-1)]===1?'T':'M';
-  }
-  if(e.maura){
-    const REF=new Date(2026,6,5);REF.setHours(0,0,0,0);
-    const dd=new Date(d);dd.setHours(0,0,0,0);
-    const weekNum=Math.max(0,Math.floor((dd-REF)/(7*86400000)));
-    const mayder_shifts=[1,0,0,1,1,0,0,1,1];
-    return mayder_shifts[Math.min(weekNum,mayder_shifts.length-1)]===0?'T':'M';
-  }
   if(e.pairUxue){
     const uxue=STORES.comptoir.emps.find(x=>x.name==='Uxue');
     if(uxue) return baseShiftRot(uxue,wOff2)==='M'?'T':'M'; // espejo
@@ -605,27 +583,11 @@ function getShift(emps,emp,date,store){
   // Comodín Comptoir: sábado ya tratado arriba; resto de días ver lógica cover abajo
   
 
-  // Mayder schedule from image (week starting Sunday)
-  if(emp.mayder||emp.maura){
-    const REF=new Date(2026,6,5);REF.setHours(0,0,0,0);
-    const dd=new Date(d);dd.setHours(0,0,0,0);
-    const diffDays=Math.floor((dd-REF)/(86400000));
-    const weekNum=Math.floor(diffDays/7);
-    const mayder_shifts=[1,0,0,1,1,0,0,1,1]; // 0=mañana,1=tarde
-    const idx=Math.max(0,Math.min(weekNum,mayder_shifts.length-1));
-    const isTarde=emp.mayder?mayder_shifts[idx]===1:mayder_shifts[idx]===0;
-    return isTarde?'T':'M';
-  }
 
-  // Mari Carmen: misma rotacion que Uxue en Comptoir
-  if(emp.pairUxue){
+  // Boutique Pareja A (Mari Carmen + Luna): sincronizada con Uxue de Comptoir
+  if(emp.bPairA){
     const uxue=STORES.comptoir.emps.find(e=>e.name==='Uxue');
-    if(uxue){
-      // Uxue es rotacion normal en comptoir
-      const uxueShift=baseShiftRot(uxue,wo2);
-      return uxueShift;
-    }
-    // fallback rotacion normal
+    if(uxue) return baseShiftRot(uxue,wo2);
     return (((wo2)%2+2)%2===0)?'M':'T';
   }
 
@@ -637,49 +599,35 @@ function getShift(emps,emp,date,store){
       if(resting.fixedShift==='M') return 'M';
       if(resting.fixedShift==='T') return 'T';
       if(resting.splitHondartza) return 'T';
-      if(resting.mayder){
-        const REF=new Date(2026,6,5);REF.setHours(0,0,0,0);
-        const dd=new Date(d);dd.setHours(0,0,0,0);
-        const weekNum=Math.max(0,Math.floor((dd-REF)/(7*86400000)));
-        const mayder_shifts=[1,0,0,1,1,0,0,1,1];
-        const idx=Math.min(weekNum,mayder_shifts.length-1);
-        return mayder_shifts[idx]===1?'T':'M';
-      }
-      if(resting.maura){
-        const REF=new Date(2026,6,5);REF.setHours(0,0,0,0);
-        const dd=new Date(d);dd.setHours(0,0,0,0);
-        const weekNum=Math.max(0,Math.floor((dd-REF)/(7*86400000)));
-        const mayder_shifts=[1,0,0,1,1,0,0,1,1];
-        const idx=Math.min(weekNum,mayder_shifts.length-1);
-        return mayder_shifts[idx]===0?'T':'M';
-      }
       return baseShiftRot(resting,wo2);
     }
     return 'M';
   }
 
-  // Margaux: espejo de Mari Carmen (opuesto a Uxue)
-  if(emp.pairUxueMirror){
+  // Boutique Pareja B (Margot + Davia): espejo de pareja A (opuesto a Uxue)
+  if(emp.bPairB){
     const uxue=STORES.comptoir.emps.find(e=>e.name==='Uxue');
     if(uxue){const s=baseShiftRot(uxue,wo2);return s==='M'?'T':'M';}
     return (((wo2)%2+2)%2===0)?'T':'M';
   }
 
-  // Comodin Boutique: cubre festivo de cada trabajador de boutique + Nora (domingo)
+  // Correturnos Boutique (Sara): cubre el turno de quien descansa hoy
   if(emp.coverB){
-    // quien descansa hoy en boutique (excluyendo fermin y comodin)
     const resting=emps.find(e=>!e.coverB&&e.special!=='fermin'&&e.dayOff===di);
     if(resting){
       if(resting.special==='manoli') return 'MN';
-      if(resting.pairUxue){
+      if(resting.bPairA){
         const uxue=STORES.comptoir.emps.find(e=>e.name==='Uxue');
         if(uxue) return baseShiftRot(uxue,wo2);
         return (((wo2)%2+2)%2===0)?'M':'T';
       }
+      if(resting.bPairB){
+        const uxue=STORES.comptoir.emps.find(e=>e.name==='Uxue');
+        if(uxue){const s=baseShiftRot(uxue,wo2);return s==='M'?'T':'M';}
+        return (((wo2)%2+2)%2===0)?'T':'M';
+      }
       return baseShiftRot(resting,wo2);
     }
-    // Domingo: cubre a Nora en Hondartza (10-14 y 16:30-19)
-    if(di===6) return 'CN';
     return 'M';
   }
 
