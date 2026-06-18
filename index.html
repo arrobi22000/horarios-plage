@@ -415,8 +415,8 @@ const STORES = {
       {id:2,name:'Mari Carmen',role:'Pareja mañana/tarde (A)',  bPairA:true,      dayOff:2},
       {id:3,name:'Luna',       role:'Pareja mañana/tarde (A)',  bPairA:true,      dayOff:0},
       {id:4,name:'Margot',     role:'Pareja mañana/tarde (B)',  bPairB:true,      dayOff:3},
-      {id:5,name:'Davia',      role:'Pareja mañana/tarde (B)',  bPairB:true,      dayOff:4},
-      {id:6,name:'Sara',       role:'Correturnos',             coverB:true,      dayOff:5},
+      {id:5,name:'Davia',      role:'Pareja mañana/tarde (B)',  bPairB:true,      dayOff:5},
+      {id:6,name:'Sara',       role:'Correturnos',             coverB:true,      dayOff:4},
     ]
   },
   hondartza: {
@@ -486,8 +486,8 @@ function getOpeningShift(emp,date,emps,store){
   if(di===emp.dayOff) return 'OFF';
   if(emp.fixedShift==='M') return 'I3';    // Iciar: 10-16:30
   if(emp.splitHondartza)   return 'O3';    // Oihana
-  if(emp.special==='fermin') return 'F2';
-  if(emp.special==='manoli') return 'T2';
+  if(emp.special==='fermin') return 'F';   // Fermin horario normal (10-12/19-23)
+  if(emp.special==='manoli') return 'MN';  // Manoli horario normal (12-19)
   if(emp.fixedShift==='U') return 'M2';    // Nora 10-15
 
   // Comodin: cubre quien descansa, si era mañana → M2 (o M930_3 si es Irati cubriendo Iciar)
@@ -513,6 +513,16 @@ function getOpeningShift(emp,date,emps,store){
 function getEmpShiftForDay(e, d, wOff2){
   if(e.fixedShift) return e.fixedShift;
   if(e.splitHondartza) return 'T';
+  if(e.bPairA){
+    const uxue=STORES.comptoir.emps.find(x=>x.name==='Uxue');
+    if(uxue) return baseShiftRot(uxue,wOff2);
+    return (((wOff2)%2+2)%2===0)?'M':'T';
+  }
+  if(e.bPairB){
+    const uxue=STORES.comptoir.emps.find(x=>x.name==='Uxue');
+    if(uxue){const s=baseShiftRot(uxue,wOff2);return s==='M'?'T':'M';}
+    return (((wOff2)%2+2)%2===0)?'T':'M';
+  }
   if(e.pairUxue){
     const uxue=STORES.comptoir.emps.find(x=>x.name==='Uxue');
     if(uxue) return baseShiftRot(uxue,wOff2)==='M'?'T':'M'; // espejo
@@ -628,6 +638,8 @@ function getShift(emps,emp,date,store){
       }
       return baseShiftRot(resting,wo2);
     }
+    // Domingo: cubre a Nora en Hondartza (10-14 y 16:30-19)
+    if(di===6) return 'CN';
     return 'M';
   }
 
